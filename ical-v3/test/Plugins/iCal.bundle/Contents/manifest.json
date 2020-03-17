@@ -1,0 +1,44 @@
+{
+    "name": "iCal v3",
+    "id": 20000,
+    "commands": [
+        {
+            "theme": "iCal permission",
+            "syntax": "iCal Request permisson:J",
+            "threadSafe": true
+        },
+        {
+            "theme": "iCal Calendar Store",
+            "syntax": "iCal QUERY EVENT(&J):J",
+            "threadSafe": true
+        },
+        {
+            "theme": "iCal Calendar Store",
+            "syntax": "iCal GET CALENDAR LIST:J",
+            "threadSafe": true
+        },
+        {
+            "theme": "iCal Calendar",
+            "syntax": "iCal Create calendar:J",
+            "threadSafe": true
+        },
+        {
+            "theme": "iCal Calendar",
+            "syntax": "iCal Set calendar property:J",
+            "threadSafe": true
+        },
+        {
+            "theme": "iCal Calendar",
+            "syntax": "iCal Get calendar property:J",
+            "threadSafe": true
+        },
+        {
+            "theme": "iCal Calendar",
+            "syntax": "iCal Remove_calendar:J",
+            "threadSafe": true
+        }
+        
+       
+        
+    ]
+}
