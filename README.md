@@ -32,9 +32,37 @@ or
 }
 ```
 
-If the main app (4D) has the required ``Info.plist`` property as well as codesigning entitlement, 2 dialogs might be presented, one after the other.
+If the main app (4D) has the required ``Info.plist`` property as well as codesigning entitlement, and the user has not yet been asked for these permissions for the current application, 2 dialogs might be presented, one after the other.
 
 <img width="532" alt="スクリーンショット 2020-03-17 9 51 06" src="https://user-images.githubusercontent.com/1725068/76811694-d8518d00-6835-11ea-85a3-5556bc3522f6.png">
 
 <img width="532" alt="スクリーンショット 2020-03-17 9 51 10" src="https://user-images.githubusercontent.com/1725068/76811698-dc7daa80-6835-11ea-9e40-d8352d98c0b9.png">
 
+After the dialog has been presented, one of the following status will be returned.
+
+```json
+{
+  "success":true
+}
+```
+
+```json
+{
+  "success":false,
+  "errorMessage":"permission denied"
+}
+```
+
+```json
+{
+  "success":false,
+  "errorMessage":"permission restricted"
+}
+```
+
+```json
+{
+  "success":false,
+  "errorMessage":"permission not determined"
+}
+```
