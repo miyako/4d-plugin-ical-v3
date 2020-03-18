@@ -39,4 +39,10 @@ typedef enum {
 void iCal_QUERY_EVENT(PA_PluginParameters params);
 void iCal_GET_CALENDAR_LIST(PA_PluginParameters params);
 
+// --- Calendar
+void iCal_Create_calendar(PA_PluginParameters params);
+void iCal_Set_calendar_property(PA_PluginParameters params);
+void iCal_Get_calendar_property(PA_PluginParameters params);
+void iCal_Remove_calendar(PA_PluginParameters params);
+
 #endif /* PLUGIN_ICAL_H */

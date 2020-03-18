@@ -5,5 +5,19 @@
 			"type": 1,
 			"methodName": "TEST_permission"
 		}
+	},
+	{
+		"line": 17,
+		"method": {
+			"type": 1,
+			"methodName": "TEST_calendar"
+		}
+	},
+	{
+		"line": 6,
+		"method": {
+			"type": 1,
+			"methodName": "TEST_permission"
+		}
 	}
 ]

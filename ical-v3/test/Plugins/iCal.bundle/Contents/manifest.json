@@ -19,22 +19,22 @@
         },
         {
             "theme": "iCal Calendar",
-            "syntax": "iCal Create calendar:J",
+            "syntax": "iCal Create calendar(&J):J",
             "threadSafe": true
         },
         {
             "theme": "iCal Calendar",
-            "syntax": "iCal Set calendar property:J",
+            "syntax": "iCal Set calendar property(&J):J",
             "threadSafe": true
         },
         {
             "theme": "iCal Calendar",
-            "syntax": "iCal Get calendar property:J",
+            "syntax": "iCal Get calendar property(&J):J",
             "threadSafe": true
         },
         {
             "theme": "iCal Calendar",
-            "syntax": "iCal Remove_calendar:J",
+            "syntax": "iCal Remove calendar(&J):J",
             "threadSafe": true
         }
         

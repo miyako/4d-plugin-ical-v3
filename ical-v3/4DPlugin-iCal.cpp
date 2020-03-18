@@ -169,6 +169,19 @@ void PluginMain(PA_long32 selector, PA_PluginParameters params) {
                 iCal_GET_CALENDAR_LIST(params);
                 break;
                 
+            case 4 :
+                iCal_Create_calendar(params);
+                break;
+            case 5 :
+                iCal_Set_calendar_property(params);
+                break;
+            case 6 :
+                iCal_Get_calendar_property(params);
+                break;
+            case 7 :
+                iCal_Remove_calendar(params);
+                break;
+                
         }
 
 	}
@@ -176,6 +189,264 @@ void PluginMain(PA_long32 selector, PA_PluginParameters params) {
 	{
 
 	}
+}
+
+NSColor *getRGBcolor(unsigned int rgb) {
+    
+    NSColor *color = NULL;
+    
+    CGFloat red, green, blue;
+    
+    red     = (CGFloat)(((rgb & 0x00FF0000) >> 16  ) / 0xFF);
+    green   = (CGFloat)(((rgb & 0x0000FF00) >> 8   ) / 0xFF);
+    blue    = (CGFloat)(((rgb & 0x000000FF)        ) / 0xFF);
+    
+    color = [NSColor colorWithDeviceRed:red
+                                  green:green
+                                   blue:blue
+                                  alpha:1.0f];
+    
+    return color;
+}
+
+unsigned int getColorRGB(NSColor *color) {
+    
+    unsigned int rgb = 0;
+    
+    if(color)
+    {
+        color = [color colorUsingColorSpace:[NSColorSpace displayP3ColorSpace]];
+        
+        /*
+         color = [color colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]];//NSDeviceRGBColorSpace
+         color = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
+         color = [color colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];//NSCalibratedRGBColorSpace
+         */
+        
+        CGFloat red, green, blue, alpha;
+        [color getRed:&red green:&green blue:&blue alpha:&alpha];
+        
+        rgb +=
+        
+        /*
+         +((unsigned int)(red      * 255.99999f) << 16)
+         +((unsigned int)(green    * 255.99999f) << 8)
+         + (unsigned int)(blue     * 255.99999f);
+         */
+        
+        +((unsigned int)floor((CGFloat)(red      * 0xFF) + 0.5f) << 16)
+        +((unsigned int)floor((CGFloat)(green    * 0xFF) + 0.5f) << 8)
+        + (unsigned int)floor((CGFloat)(blue     * 0xFF) + 0.5f);
+    }
+    
+    return rgb;
+}
+
+CalCalendar *ob_get_calendar(PA_ObjectRef options, CalCalendarStore *calendarStore) {
+    
+    CalCalendar *value = nil;
+    
+    if(options){
+        if(calendarStore){
+            NSString *uid = ob_get_v(options, L"uid");
+            if(uid){
+                value = [calendarStore calendarWithUID:uid];
+            }else{
+                NSString *title = ob_get_v(options, L"title");
+                if(title){
+                    NSArray *_calendars = [calendarStore calendars];
+                    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"title LIKE %@", title];
+                    _calendars = [_calendars filteredArrayUsingPredicate:predicate];
+                    if([_calendars count]){
+                        value = [_calendars objectAtIndex:0];
+                    }
+                }
+            }
+        }
+    }
+    return value;
+}
+
+void iCal_Create_calendar(PA_PluginParameters params) {
+    
+    PA_ObjectRef status = PA_CreateObject();
+    
+    if(check_permission(status)) {
+        CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
+        if(defaultCalendarStore) {
+            PA_ObjectRef options = PA_GetObjectParameter(params, 1);
+            if(options){
+                
+                CalCalendar *calendar = [CalCalendar calendar];
+                
+                NSString *title = ob_get_v(options, L"title");
+                
+                if(title){
+                    calendar.title = title;
+                    [title release];
+                }
+
+                NSString *notes = ob_get_v(options, L"notes");
+                
+                if(notes){
+                    calendar.notes = notes;
+                    [notes release];
+                }
+                
+                if(ob_is_defined(options, L"color")){
+                    calendar.color = getRGBcolor(ob_get_n(options, L"color"));
+                }
+                
+                NSError *error = nil;
+                
+                if([defaultCalendarStore saveCalendar:calendar error:&error]) {
+                    
+                    ob_set_b(status, L"success", true);
+                    
+                    PA_ObjectRef _calendar = PA_CreateObject();
+
+                    ob_set_v(_calendar, L"title", calendar.title);
+                    ob_set_v(_calendar, L"uid", calendar.uid);
+                    ob_set_v(_calendar, L"notes", calendar.notes);
+                    ob_set_v(_calendar, L"type", calendar.type);
+                    
+                    ob_set_b(_calendar, L"isEditable", calendar.isEditable);
+                    ob_set_n(_calendar, L"color", calendar.color ? getColorRGB(calendar.color) : 0L);
+
+                    ob_set_o(status, L"calendar", _calendar);
+
+                }else{
+                    ob_set_b(status, L"success", false);
+                    ob_set_v(status, L"errorMessage", [error description]);
+                }
+            }
+        }
+    }
+    
+    PA_ReturnObject(params, status);
+}
+
+void iCal_Set_calendar_property(PA_PluginParameters params) {
+    
+    PA_ObjectRef status = PA_CreateObject();
+    
+    if(check_permission(status)) {
+        CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
+        if(defaultCalendarStore) {
+            PA_ObjectRef options = PA_GetObjectParameter(params, 1);
+            if(options){
+                CalCalendar *calendar = ob_get_calendar(options, defaultCalendarStore);
+                if(calendar){
+                    
+                    NSString *title = ob_get_v(options, L"title");
+                    
+                    if(title){
+                        calendar.title = title;
+                        [title release];
+                    }
+                    
+                    NSString *notes = ob_get_v(options, L"notes");
+                    
+                    if(notes){
+                        calendar.notes = notes;
+                        [notes release];
+                    }
+                    
+                    if(ob_is_defined(options, L"color")){
+                        calendar.color = getRGBcolor(ob_get_n(options, L"color"));
+                    }
+                    
+                    NSError *error = nil;
+                    
+                    if([defaultCalendarStore saveCalendar:calendar error:&error]) {
+                        
+                        ob_set_b(status, L"success", true);
+                        
+                        PA_ObjectRef _calendar = PA_CreateObject();
+                        
+                        ob_set_v(_calendar, L"title", calendar.title);
+                        ob_set_v(_calendar, L"uid", calendar.uid);
+                        ob_set_v(_calendar, L"notes", calendar.notes);
+                        ob_set_v(_calendar, L"type", calendar.type);
+                        
+                        ob_set_b(_calendar, L"isEditable", calendar.isEditable);
+                        ob_set_n(_calendar, L"color", calendar.color ? getColorRGB(calendar.color) : 0L);
+                        
+                        ob_set_o(status, L"calendar", _calendar);
+                        
+                    }else{
+                        ob_set_b(status, L"success", false);
+                        ob_set_v(status, L"errorMessage", [error description]);
+                    }
+                }
+            }
+        }
+    }
+    
+    PA_ReturnObject(params, status);
+}
+
+void iCal_Get_calendar_property(PA_PluginParameters params) {
+    
+    PA_ObjectRef status = PA_CreateObject();
+    
+    if(check_permission(status)) {
+        CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
+        if(defaultCalendarStore) {
+            PA_ObjectRef options = PA_GetObjectParameter(params, 1);
+            if(options){
+                CalCalendar *calendar = ob_get_calendar(options, defaultCalendarStore);
+                if(calendar){
+                    
+                    PA_ObjectRef _calendar = PA_CreateObject();
+
+                    ob_set_v(_calendar, L"title", calendar.title);
+                    ob_set_v(_calendar, L"uid", calendar.uid);
+                    ob_set_v(_calendar, L"notes", calendar.notes);
+                    ob_set_v(_calendar, L"type", calendar.type);
+                    
+                    ob_set_b(_calendar, L"isEditable", calendar.isEditable);
+                    ob_set_n(_calendar, L"color", calendar.color ? getColorRGB(calendar.color) : 0L);
+
+                    ob_set_o(status, L"calendar", _calendar);
+                }else{
+                    ob_set_b(status, L"success", false);
+                    ob_set_s(status, L"errorMessage", "invalid calendar");
+                }
+            }
+        }
+    }
+    
+    PA_ReturnObject(params, status);
+}
+
+void iCal_Remove_calendar(PA_PluginParameters params) {
+    
+    PA_ObjectRef status = PA_CreateObject();
+    
+    if(check_permission(status)) {
+        CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
+        if(defaultCalendarStore) {
+            PA_ObjectRef options = PA_GetObjectParameter(params, 1);
+            if(options){
+                CalCalendar *calendar = ob_get_calendar(options, defaultCalendarStore);
+                if(calendar){
+                    NSError *error = nil;
+                    if([defaultCalendarStore removeCalendar:calendar error:&error]){
+                        ob_set_b(status, L"success", true);
+                    }else{
+                        ob_set_b(status, L"success", false);
+                        ob_set_v(status, L"errorMessage", [error description]);
+                    }
+                }else{
+                    ob_set_b(status, L"success", false);
+                    ob_set_s(status, L"errorMessage", "invalid calendar");
+                }
+            }
+        }
+    }
+    
+    PA_ReturnObject(params, status);
 }
 
 NSArray *ob_get_calendars(PA_ObjectRef options, CalCalendarStore *calendarStore) {
@@ -195,7 +466,19 @@ NSArray *ob_get_calendars(PA_ObjectRef options, CalCalendarStore *calendarStore)
                             NSString *uid = ob_get_v(o, L"uid");
                             if(uid){
                                 CalCalendar *calendar = [calendarStore calendarWithUID:uid];
-                                [value addObject:calendar];
+                                if(calendar){
+                                    [value addObject:calendar];
+                                }
+                            }else{
+                                NSString *title = ob_get_v(o, L"title");
+                                if(title){
+                                    NSArray *_calendars = [calendarStore calendars];
+                                    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"title LIKE %@", title];
+                                    _calendars = [_calendars filteredArrayUsingPredicate:predicate];
+                                    if([_calendars count]){
+                                        [value addObject:[_calendars objectAtIndex:0]];
+                                    }
+                                }
                             }
                         }
                     }
@@ -293,39 +576,6 @@ void iCal_QUERY_EVENT(PA_PluginParameters params) {
         }
     }
     PA_ReturnObject(params, status);
-}
-
-unsigned int getColorRGB(NSColor *color) {
-    
-    unsigned int rgb = 0;
-    
-    if(color)
-    {
-        color = [color colorUsingColorSpace:[NSColorSpace displayP3ColorSpace]];
-        
-        /*
-         color = [color colorUsingColorSpace:[NSColorSpace deviceRGBColorSpace]];//NSDeviceRGBColorSpace
-         color = [color colorUsingColorSpace:[NSColorSpace sRGBColorSpace]];
-         color = [color colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];//NSCalibratedRGBColorSpace
-         */
-        
-        CGFloat red, green, blue, alpha;
-        [color getRed:&red green:&green blue:&blue alpha:&alpha];
-        
-        rgb +=
-        
-        /*
-         +((unsigned int)(red      * 255.99999f) << 16)
-         +((unsigned int)(green    * 255.99999f) << 8)
-         + (unsigned int)(blue     * 255.99999f);
-         */
-        
-        +((unsigned int)floor((CGFloat)(red      * 0xFF) + 0.5f) << 16)
-        +((unsigned int)floor((CGFloat)(green    * 0xFF) + 0.5f) << 8)
-        + (unsigned int)floor((CGFloat)(blue     * 0xFF) + 0.5f);
-    }
-    
-    return rgb;
 }
 
 void iCal_GET_CALENDAR_LIST(PA_PluginParameters params) {

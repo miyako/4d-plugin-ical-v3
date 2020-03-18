@@ -198,12 +198,30 @@
 		"stamp": "2019-12-13T04:37:40.619Z"
 	},
 	"Sources/Methods/TEST_permission.4dm": {
-		"startSelection": 32,
-		"endSelection": 32,
-		"firstSelectedLine": 12,
-		"lastSelectedLine": 12,
+		"startSelection": 16,
+		"endSelection": 16,
+		"firstSelectedLine": 10,
+		"lastSelectedLine": 10,
 		"folding": [],
 		"bookmarks": [],
 		"stamp": "2020-03-17T05:15:59.673Z"
+	},
+	"Sources/Methods/TEST_calendar.4dm": {
+		"startSelection": 7,
+		"endSelection": 7,
+		"firstSelectedLine": 23,
+		"lastSelectedLine": 23,
+		"folding": [],
+		"bookmarks": [],
+		"stamp": "2020-03-18T01:55:31.599Z"
+	},
+	"Sources/Methods/TEST_calendar_mod.4dm": {
+		"startSelection": 35,
+		"endSelection": 35,
+		"firstSelectedLine": 4,
+		"lastSelectedLine": 4,
+		"folding": [],
+		"bookmarks": [],
+		"stamp": "2020-03-18T01:41:26.667Z"
 	}
 }
