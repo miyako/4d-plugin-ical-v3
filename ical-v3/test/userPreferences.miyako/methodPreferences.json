@@ -198,22 +198,22 @@
 		"stamp": "2019-12-13T04:37:40.619Z"
 	},
 	"Sources/Methods/TEST_permission.4dm": {
-		"startSelection": 16,
-		"endSelection": 16,
-		"firstSelectedLine": 10,
-		"lastSelectedLine": 10,
+		"startSelection": 0,
+		"endSelection": 0,
+		"firstSelectedLine": 21,
+		"lastSelectedLine": 21,
 		"folding": [],
 		"bookmarks": [],
-		"stamp": "2020-03-17T05:15:59.673Z"
+		"stamp": "2020-03-18T03:18:55.544Z"
 	},
 	"Sources/Methods/TEST_calendar.4dm": {
 		"startSelection": 7,
 		"endSelection": 7,
-		"firstSelectedLine": 23,
-		"lastSelectedLine": 23,
+		"firstSelectedLine": 26,
+		"lastSelectedLine": 26,
 		"folding": [],
 		"bookmarks": [],
-		"stamp": "2020-03-18T01:55:31.599Z"
+		"stamp": "2020-03-18T12:45:39.169Z"
 	},
 	"Sources/Methods/TEST_calendar_mod.4dm": {
 		"startSelection": 35,
@@ -223,5 +223,23 @@
 		"folding": [],
 		"bookmarks": [],
 		"stamp": "2020-03-18T01:41:26.667Z"
+	},
+	"Sources/Methods/TEST_event.4dm": {
+		"startSelection": 18,
+		"endSelection": 18,
+		"firstSelectedLine": 15,
+		"lastSelectedLine": 15,
+		"folding": [],
+		"bookmarks": [],
+		"stamp": "2020-03-18T12:47:01.696Z"
+	},
+	"Sources/Methods/TEST_event_mod.4dm": {
+		"startSelection": 60,
+		"endSelection": 74,
+		"firstSelectedLine": 7,
+		"lastSelectedLine": 7,
+		"folding": [],
+		"bookmarks": [],
+		"stamp": "2020-03-18T13:21:53.169Z"
 	}
 }

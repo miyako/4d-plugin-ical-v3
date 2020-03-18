@@ -2,14 +2,11 @@
 	"editors": [
 		{
 			"type": "method",
-			"id": 2147483640,
+			"id": 2147483642,
 			"codeDescriptor": {
 				"type": 1,
-				"methodName": "TEST_permission"
+				"methodName": "TEST_event_mod"
 			}
-		},
-		{
-			"type": "explorer"
 		}
 	]
 }

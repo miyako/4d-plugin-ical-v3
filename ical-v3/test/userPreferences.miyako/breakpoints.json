@@ -7,17 +7,31 @@
 		}
 	},
 	{
-		"line": 17,
+		"line": 23,
 		"method": {
 			"type": 1,
 			"methodName": "TEST_calendar"
 		}
 	},
 	{
-		"line": 6,
+		"line": 8,
 		"method": {
 			"type": 1,
-			"methodName": "TEST_permission"
+			"methodName": "TEST_calendar"
+		}
+	},
+	{
+		"line": 12,
+		"method": {
+			"type": 1,
+			"methodName": "TEST_event_mod"
+		}
+	},
+	{
+		"line": 17,
+		"method": {
+			"type": 1,
+			"methodName": "TEST_event"
 		}
 	}
 ]

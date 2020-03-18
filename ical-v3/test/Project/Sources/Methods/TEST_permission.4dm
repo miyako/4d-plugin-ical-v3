@@ -21,7 +21,6 @@ If ($status.success)
 			
 			$status:=iCal QUERY EVENT ($options)
 			
-			
 		End if 
 		
 	End if 
