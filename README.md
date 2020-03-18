@@ -42,7 +42,7 @@ If the main app (4D) has the required ``Info.plist`` property as well as codesig
 
 **Note**: The plugin does not need access Reminder or Contacts. However the underlying API will prompt the requests.
 
-The system will only display the dialogs once per application session, and never if the user has already made up their mind.
+The system will only display the dialogs once per application session, and never if the user has already denied the same request.
 
 You can reset security settings from Terminal.
 
