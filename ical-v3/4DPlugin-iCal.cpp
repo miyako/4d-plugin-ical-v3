@@ -806,11 +806,15 @@ void ob_copy_event(PA_ObjectRef _event, CalEvent *event, BOOL with_calendar = TR
                 ob_set_n(_recurrenceRule, L"firstDayOfTheWeek", recurrenceRule.firstDayOfTheWeek);
                 ob_set_n(_recurrenceRule, L"recurrenceType", recurrenceRule.recurrenceType);
                 
+                PA_ObjectRef _recurrenceEnd = PA_CreateObject();
+                
                 if(recurrenceRule.recurrenceEnd){
-                    ob_set_b(_recurrenceRule, L"usesEndDate", recurrenceRule.recurrenceEnd.usesEndDate);
-                    ob_set_d(_recurrenceRule, L"endDate", recurrenceRule.recurrenceEnd.endDate);
-                    ob_set_n(_recurrenceRule, L"occurrenceCount", recurrenceRule.recurrenceEnd.occurrenceCount);
+                    ob_set_b(_recurrenceEnd, L"usesEndDate", recurrenceRule.recurrenceEnd.usesEndDate);
+                    ob_set_d(_recurrenceEnd, L"endDate", recurrenceRule.recurrenceEnd.endDate);
+                    ob_set_n(_recurrenceEnd, L"occurrenceCount", recurrenceRule.recurrenceEnd.occurrenceCount);
                 }
+                
+                ob_set_o(_recurrenceRule, L"recurrenceEnd", _recurrenceEnd);
                                 
                 if(recurrenceRule.daysOfTheWeek){
                     PA_CollectionRef _daysOfTheWeek = PA_CreateCollection();
