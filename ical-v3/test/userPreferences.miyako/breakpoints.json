@@ -1,37 +1,23 @@
 ﻿[
 	{
-		"line": 19,
-		"method": {
-			"type": 1,
-			"methodName": "TEST_permission"
-		}
-	},
-	{
-		"line": 23,
-		"method": {
-			"type": 1,
-			"methodName": "TEST_calendar"
-		}
-	},
-	{
-		"line": 8,
-		"method": {
-			"type": 1,
-			"methodName": "TEST_calendar"
-		}
-	},
-	{
-		"line": 12,
+		"line": 3,
 		"method": {
 			"type": 1,
 			"methodName": "TEST_event_mod"
 		}
 	},
 	{
-		"line": 17,
+		"line": 18,
 		"method": {
 			"type": 1,
 			"methodName": "TEST_event"
+		}
+	},
+	{
+		"line": 19,
+		"method": {
+			"type": 1,
+			"methodName": "TEST_permission"
 		}
 	}
 ]

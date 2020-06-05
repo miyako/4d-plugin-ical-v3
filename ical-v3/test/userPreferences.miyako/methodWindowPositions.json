@@ -162,14 +162,14 @@
 		"height": 787
 	},
 	"Sources/Methods/TEST_permission.4dm": {
-		"left": 257,
-		"top": 222,
+		"left": 303,
+		"top": 132,
 		"width": 1129,
 		"height": 787
 	},
 	"Sources/Methods/TEST_calendar.4dm": {
-		"left": 251,
-		"top": 244,
+		"left": 326,
+		"top": 241,
 		"width": 1101,
 		"height": 806
 	},
@@ -180,15 +180,15 @@
 		"height": 806
 	},
 	"Sources/Methods/TEST_event.4dm": {
-		"left": 229,
-		"top": 399,
+		"left": 181,
+		"top": 245,
 		"width": 1129,
 		"height": 787
 	},
 	"Sources/Methods/TEST_event_mod.4dm": {
-		"left": 174,
-		"top": 504,
-		"width": 1129,
-		"height": 787
+		"left": 747,
+		"top": 150,
+		"width": 1140,
+		"height": 601
 	}
 }

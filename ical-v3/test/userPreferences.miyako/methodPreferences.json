@@ -200,11 +200,11 @@
 	"Sources/Methods/TEST_permission.4dm": {
 		"startSelection": 0,
 		"endSelection": 0,
-		"firstSelectedLine": 21,
-		"lastSelectedLine": 21,
+		"firstSelectedLine": 7,
+		"lastSelectedLine": 7,
 		"folding": [],
 		"bookmarks": [],
-		"stamp": "2020-03-18T03:18:55.544Z"
+		"stamp": "2020-06-05T02:15:04.583Z"
 	},
 	"Sources/Methods/TEST_calendar.4dm": {
 		"startSelection": 7,
@@ -225,21 +225,21 @@
 		"stamp": "2020-03-18T01:41:26.667Z"
 	},
 	"Sources/Methods/TEST_event.4dm": {
-		"startSelection": 18,
-		"endSelection": 18,
-		"firstSelectedLine": 15,
-		"lastSelectedLine": 15,
+		"startSelection": 37,
+		"endSelection": 0,
+		"firstSelectedLine": 16,
+		"lastSelectedLine": 4,
 		"folding": [],
 		"bookmarks": [],
-		"stamp": "2020-03-18T12:47:01.696Z"
+		"stamp": "2020-06-05T02:19:24.338Z"
 	},
 	"Sources/Methods/TEST_event_mod.4dm": {
-		"startSelection": 60,
-		"endSelection": 74,
-		"firstSelectedLine": 7,
-		"lastSelectedLine": 7,
+		"startSelection": 64,
+		"endSelection": 28,
+		"firstSelectedLine": 0,
+		"lastSelectedLine": 0,
 		"folding": [],
 		"bookmarks": [],
-		"stamp": "2020-03-18T13:21:53.169Z"
+		"stamp": "2020-06-05T01:10:53.231Z"
 	}
 }

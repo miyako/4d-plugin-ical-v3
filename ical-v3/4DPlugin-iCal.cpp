@@ -481,19 +481,22 @@ void ob_set_event_prop(PA_ObjectRef status, PA_ObjectRef options, CalEvent *even
                                     }
                                 }
                                 
-                                NSMutableArray *nthWeekDaysOfTheMonth = [[NSMutableArray alloc]init];
-                                
-                                if(ob_is_defined(_recurrenceRule, L"nthWeekDaysOfTheMonth")){
-                                    PA_CollectionRef _nthWeekDaysOfTheMonth = ob_get_c(_recurrenceRule, L"nthWeekDaysOfTheMonth");
-                                    if(_nthWeekDaysOfTheMonth){
-                                        for(PA_long32 i = 0; i < PA_GetCollectionLength(_nthWeekDaysOfTheMonth); ++i){
-                                            PA_Variable v = PA_GetCollectionElement(_nthWeekDaysOfTheMonth, i);
-                                            if(PA_GetVariableKind(v) == eVK_Real){
-                                                [nthWeekDaysOfTheMonth addObject:[NSNumber numberWithInt:(int)PA_GetRealVariable(v)]];
-                                            }
-                                        }
-                                    }
-                                }
+                                /*
+                                 NSMutableArray *nthWeekDaysOfTheMonth = [[NSMutableArray alloc]init];
+                                 
+                                 if(ob_is_defined(_recurrenceRule, L"nthWeekDaysOfTheMonth")){
+                                     PA_CollectionRef _nthWeekDaysOfTheMonth = ob_get_c(_recurrenceRule, L"nthWeekDaysOfTheMonth");
+                                     if(_nthWeekDaysOfTheMonth){
+                                         for(PA_long32 i = 0; i < PA_GetCollectionLength(_nthWeekDaysOfTheMonth); ++i){
+                                             PA_Variable v = PA_GetCollectionElement(_nthWeekDaysOfTheMonth, i);
+                                             if(PA_GetVariableKind(v) == eVK_Real){
+                                                 [nthWeekDaysOfTheMonth addObject:[NSNumber numberWithInt:(int)PA_GetRealVariable(v)]];
+                                             }
+                                         }
+                                     }
+                                 }
+                                 */
+
                                 
                                 NSMutableArray *monthsOfTheYear = [[NSMutableArray alloc]init];
                                 
@@ -689,7 +692,7 @@ void ob_set_event_prop(PA_ObjectRef status, PA_ObjectRef options, CalEvent *even
                                     
                                 [daysOfTheWeek release];
                                 [daysOfTheMonth release];
-                                [nthWeekDaysOfTheMonth release];
+//                                [nthWeekDaysOfTheMonth release];
                                 [monthsOfTheYear release];
                         }
 
@@ -844,8 +847,15 @@ void ob_copy_event(PA_ObjectRef _event, CalEvent *event, BOOL with_calendar = TR
                     PA_CollectionRef _nthWeekDaysOfTheMonth = PA_CreateCollection();
                     for(unsigned int i = 0; i < [recurrenceRule.nthWeekDaysOfTheMonth count]; ++i)
                     {
-                        PA_Variable v = PA_CreateVariable(eVK_Longint);
-                        PA_SetLongintVariable(&v, (PA_long32)[(NSNumber *)[recurrenceRule.nthWeekDaysOfTheMonth objectAtIndex:i]intValue]);
+                        PA_Variable v = PA_CreateVariable(eVK_Object);
+                        
+                        PA_ObjectRef _nthWeekDay = PA_CreateObject();
+                        CalNthWeekDay *nthWeekDay = [recurrenceRule.nthWeekDaysOfTheMonth objectAtIndex:i];
+                        ob_set_n(_nthWeekDay, L"dayOfTheWeek", nthWeekDay.dayOfTheWeek);
+                        ob_set_n(_nthWeekDay, L"weekNumber", nthWeekDay.weekNumber);
+                        
+                        PA_SetObjectVariable(&v, _nthWeekDay);
+                        
                         PA_SetCollectionElement(_nthWeekDaysOfTheMonth, PA_GetCollectionLength(_nthWeekDaysOfTheMonth), v);
                         PA_ClearVariable(&v);
                     }

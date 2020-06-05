@@ -16,7 +16,7 @@ If ($status.success)
 			
 			$options:=New object:C1471(\
 				"calendars";$status.calendars;\
-				"endDate";Current date:C33+1;\
+				"endDate";Current date:C33+99;\
 				"startDate";Current date:C33)
 			
 			$status:=iCal QUERY EVENT ($options)
