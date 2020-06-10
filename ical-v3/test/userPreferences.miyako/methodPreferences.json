@@ -189,31 +189,13 @@
 		"stamp": "2019-07-07T00:13:49.000Z"
 	},
 	"Sources/Methods/update_manifest_json.4dm": {
-		"startSelection": 44,
-		"endSelection": 44,
+		"startSelection": 5,
+		"endSelection": 5,
 		"firstSelectedLine": 10,
 		"lastSelectedLine": 10,
 		"folding": [],
 		"bookmarks": [],
 		"stamp": "2019-12-13T04:37:40.619Z"
-	},
-	"Sources/Methods/TEST_permission.4dm": {
-		"startSelection": 0,
-		"endSelection": 0,
-		"firstSelectedLine": 7,
-		"lastSelectedLine": 7,
-		"folding": [],
-		"bookmarks": [],
-		"stamp": "2020-06-05T02:15:04.583Z"
-	},
-	"Sources/Methods/TEST_calendar.4dm": {
-		"startSelection": 7,
-		"endSelection": 7,
-		"firstSelectedLine": 26,
-		"lastSelectedLine": 26,
-		"folding": [],
-		"bookmarks": [],
-		"stamp": "2020-03-18T12:45:39.169Z"
 	},
 	"Sources/Methods/TEST_calendar_mod.4dm": {
 		"startSelection": 35,
@@ -225,21 +207,84 @@
 		"stamp": "2020-03-18T01:41:26.667Z"
 	},
 	"Sources/Methods/TEST_event.4dm": {
-		"startSelection": 37,
-		"endSelection": 0,
-		"firstSelectedLine": 16,
-		"lastSelectedLine": 4,
+		"startSelection": 4,
+		"endSelection": 11,
+		"firstSelectedLine": 2,
+		"lastSelectedLine": 2,
 		"folding": [],
 		"bookmarks": [],
-		"stamp": "2020-06-05T02:19:24.338Z"
+		"stamp": "2020-06-05T22:38:18.446Z"
 	},
 	"Sources/Methods/TEST_event_mod.4dm": {
-		"startSelection": 64,
-		"endSelection": 28,
-		"firstSelectedLine": 0,
-		"lastSelectedLine": 0,
+		"startSelection": 0,
+		"endSelection": 0,
+		"firstSelectedLine": 2,
+		"lastSelectedLine": 2,
 		"folding": [],
 		"bookmarks": [],
-		"stamp": "2020-06-05T01:10:53.231Z"
+		"stamp": "2020-06-05T23:19:07.937Z"
+	},
+	"Sources/Methods/TEST_get_prop.4dm": {
+		"startSelection": 7,
+		"endSelection": 7,
+		"firstSelectedLine": 11,
+		"lastSelectedLine": 11,
+		"folding": [],
+		"bookmarks": [],
+		"stamp": "2020-06-05T06:51:39.442Z"
+	},
+	"Sources/Methods/TEST_1.4dm": {
+		"startSelection": 0,
+		"endSelection": 0,
+		"firstSelectedLine": 26,
+		"lastSelectedLine": 26,
+		"folding": [],
+		"bookmarks": [],
+		"stamp": "2020-06-05T22:37:47.033Z"
+	},
+	"Sources/Methods/TEST_001_Get default calendar.4dm": {
+		"startSelection": 7,
+		"endSelection": 7,
+		"firstSelectedLine": 18,
+		"lastSelectedLine": 18,
+		"folding": [],
+		"bookmarks": [],
+		"stamp": "2020-06-06T02:40:36.425Z"
+	},
+	"Sources/Methods/TEST_002_calendar_Exchange.4dm": {
+		"startSelection": 7,
+		"endSelection": 7,
+		"firstSelectedLine": 23,
+		"lastSelectedLine": 23,
+		"folding": [],
+		"bookmarks": [],
+		"stamp": "2020-06-06T02:49:20.229Z"
+	},
+	"Sources/Methods/TEST_003_calendar_iCloud.4dm": {
+		"startSelection": 0,
+		"endSelection": 0,
+		"firstSelectedLine": 17,
+		"lastSelectedLine": 17,
+		"folding": [],
+		"bookmarks": [],
+		"stamp": "2020-06-06T02:49:27.815Z"
+	},
+	"Sources/Methods/TEST_004_calendar_Local.4dm": {
+		"startSelection": 27,
+		"endSelection": 27,
+		"firstSelectedLine": 14,
+		"lastSelectedLine": 14,
+		"folding": [],
+		"bookmarks": [],
+		"stamp": "2020-06-06T02:49:51.661Z"
+	},
+	"Sources/Methods/TEST_005_event.4dm": {
+		"startSelection": 69,
+		"endSelection": 69,
+		"firstSelectedLine": 27,
+		"lastSelectedLine": 27,
+		"folding": [],
+		"bookmarks": [],
+		"stamp": "2020-06-06T05:18:55.378Z"
 	}
 }

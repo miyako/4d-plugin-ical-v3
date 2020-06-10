@@ -2,7 +2,6 @@
 $options:=New object:C1471("uid";"0E1CAC61-66F9-4C68-A2F8-9CA32A9E5630")
 $status:=iCal Get event property ($options)
 
-
 $status:=iCal Request permisson 
 
 If ($status.success)

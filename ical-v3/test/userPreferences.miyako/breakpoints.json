@@ -7,17 +7,10 @@
 		}
 	},
 	{
-		"line": 18,
+		"line": 11,
 		"method": {
 			"type": 1,
-			"methodName": "TEST_event"
-		}
-	},
-	{
-		"line": 19,
-		"method": {
-			"type": 1,
-			"methodName": "TEST_permission"
+			"methodName": "TEST_get_prop"
 		}
 	}
 ]

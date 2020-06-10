@@ -1,7 +1,19 @@
 ﻿{
 	"methods": {
-		"TEST_calendar": {
-			"timeStamp": "2020-03-18T12:45:39.169Z"
+		"TEST_004_calendar_Local": {
+			"timeStamp": "2020-06-06T02:49:51.661Z",
+			"attributes": {
+				"invisible": true
+			}
+		},
+		"TEST_002_calendar_Exchange": {
+			"timeStamp": "2020-06-06T02:49:20.229Z",
+			"attributes": {
+				"invisible": true
+			}
+		},
+		"TEST_get_prop": {
+			"timeStamp": "2020-06-05T06:51:39.442Z"
 		},
 		"generate_file_from_template": {
 			"timeStamp": "2019-07-29T04:26:04.000Z",
@@ -24,6 +36,9 @@
 				"preemptive": "capable"
 			}
 		},
+		"TEST_005_event": {
+			"timeStamp": "2020-06-06T05:18:55.378Z"
+		},
 		"update_manifest_json": {
 			"timeStamp": "2019-12-13T04:37:40.619Z",
 			"attributes": {
@@ -32,7 +47,7 @@
 			}
 		},
 		"TEST_event_mod": {
-			"timeStamp": "2020-06-05T01:10:53.231Z"
+			"timeStamp": "2020-06-05T23:19:07.937Z"
 		},
 		"generate_project_xcode": {
 			"timeStamp": "2019-07-02T13:57:13.000Z",
@@ -44,11 +59,20 @@
 		"TEST_calendar_mod": {
 			"timeStamp": "2020-03-18T01:41:26.667Z"
 		},
-		"TEST_event": {
-			"timeStamp": "2020-06-05T02:19:24.338Z"
+		"TEST_001_Get default calendar": {
+			"timeStamp": "2020-06-06T02:40:36.425Z",
+			"attributes": {
+				"invisible": true
+			}
 		},
-		"TEST_permission": {
-			"timeStamp": "2020-06-05T02:15:04.583Z"
+		"TEST_event": {
+			"timeStamp": "2020-06-05T22:38:18.446Z"
+		},
+		"TEST_003_calendar_iCloud": {
+			"timeStamp": "2020-06-06T02:49:27.815Z",
+			"attributes": {
+				"invisible": true
+			}
 		},
 		"generate_project": {
 			"timeStamp": "2020-03-17T00:20:16.611Z"

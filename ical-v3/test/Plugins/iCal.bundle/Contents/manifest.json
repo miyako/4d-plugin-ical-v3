@@ -56,6 +56,11 @@
             "theme": "iCal Event",
             "syntax": "iCal Remove event(&J):J",
             "threadSafe": true
+        },
+        {
+            "theme": "iCal Calendar",
+            "syntax": "iCal Get default calendar:J",
+            "threadSafe": true
         }
     ]
 }

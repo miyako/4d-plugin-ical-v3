@@ -161,18 +161,6 @@
 		"width": 1129,
 		"height": 787
 	},
-	"Sources/Methods/TEST_permission.4dm": {
-		"left": 303,
-		"top": 132,
-		"width": 1129,
-		"height": 787
-	},
-	"Sources/Methods/TEST_calendar.4dm": {
-		"left": 326,
-		"top": 241,
-		"width": 1101,
-		"height": 806
-	},
 	"Sources/Methods/TEST_calendar_mod.4dm": {
 		"left": 487,
 		"top": 273,
@@ -180,15 +168,57 @@
 		"height": 806
 	},
 	"Sources/Methods/TEST_event.4dm": {
-		"left": 181,
-		"top": 245,
+		"left": 392,
+		"top": 210,
 		"width": 1129,
 		"height": 787
 	},
 	"Sources/Methods/TEST_event_mod.4dm": {
-		"left": 747,
-		"top": 150,
+		"left": 775,
+		"top": 573,
 		"width": 1140,
 		"height": 601
+	},
+	"Sources/Methods/TEST_get_prop.4dm": {
+		"left": 303,
+		"top": 132,
+		"width": 1129,
+		"height": 787
+	},
+	"Sources/Methods/TEST_1.4dm": {
+		"left": 303,
+		"top": 132,
+		"width": 1129,
+		"height": 787
+	},
+	"Sources/Methods/TEST_001_Get default calendar.4dm": {
+		"left": 216,
+		"top": 155,
+		"width": 1030,
+		"height": 528
+	},
+	"Sources/Methods/TEST_002_calendar_Exchange.4dm": {
+		"left": 516,
+		"top": 279,
+		"width": 1101,
+		"height": 806
+	},
+	"Sources/Methods/TEST_003_calendar_iCloud.4dm": {
+		"left": 313,
+		"top": 204,
+		"width": 1101,
+		"height": 806
+	},
+	"Sources/Methods/TEST_004_calendar_Local.4dm": {
+		"left": 313,
+		"top": 204,
+		"width": 1101,
+		"height": 806
+	},
+	"Sources/Methods/TEST_005_event.4dm": {
+		"left": 426,
+		"top": 221,
+		"width": 1101,
+		"height": 806
 	}
 }

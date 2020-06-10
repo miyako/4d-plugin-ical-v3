@@ -195,6 +195,10 @@ void PluginMain(PA_long32 selector, PA_PluginParameters params) {
                 iCal_Remove_event(params);
                 break;
                 
+            case 12 :
+                iCal_Get_default_calendar(params);
+                break;
+                
         }
 
 	}
@@ -257,9 +261,67 @@ unsigned int getColorRGB(NSColor *color) {
     return rgb;
 }
 
-#pragma mark Object, Collection
+#pragma mark Calendar / PA_ObjectRef
 
-NSArray *ob_get_calendars(PA_ObjectRef options, CalCalendarStore *calendarStore) {
+void ob_set_calendar(PA_ObjectRef status,
+#if USE_EK_CALENDAR_ITEM
+                     EKCalendar *calendar
+#else
+                     CalCalendar *calendar
+#endif
+                     ) {
+    
+    if(status) {
+        
+        ob_set_v(status, L"title", calendar.title);
+
+#if USE_EK_CALENDAR_ITEM
+                    ob_set_v(status, L"uid", calendar.calendarIdentifier);
+                    ob_set_n(status, L"color", calendar.color ? getColorRGB(calendar.color) : 0L);
+/* notes not supported in EK */
+        
+        switch (calendar.type) {
+            case EKCalendarTypeLocal:
+                ob_set_v(status, L"type", @"Local");
+                break;
+            case EKCalendarTypeCalDAV:
+                ob_set_v(status, L"type", @"CalDAV");
+                break;
+            case EKCalendarTypeExchange:
+                ob_set_v(status, L"type", @"Exchange");
+                break;
+            case EKCalendarTypeSubscription:
+                ob_set_v(status, L"type", @"Subscription");
+                break;
+            case EKCalendarTypeBirthday:
+                ob_set_v(status, L"type", @"Birthday");
+                break;
+            default:
+                /* CalCalendarTypeIMAP not supported in EK */
+                break;
+        }
+
+        ob_set_b(status, L"subscribed", calendar.subscribed);
+        ob_set_b(status, L"immutable", calendar.immutable);
+        ob_set_b(status, L"allowsContentModifications", calendar.allowsContentModifications);
+#else
+        ob_set_v(status, L"uid", calendar.uid);
+        ob_set_v(status, L"notes", calendar.notes);
+        ob_set_v(status, L"type", calendar.type);
+        ob_set_b(status, L"isEditable", calendar.isEditable);
+#endif
+        
+    }
+    
+}
+
+NSArray *ob_get_calendars(PA_ObjectRef options,
+#if USE_EK_CALENDAR_ITEM
+                          EKEventStore *calendarStore
+#else
+                          CalCalendarStore *calendarStore
+#endif
+                          ) {
     
     NSMutableArray *value = nil;
     
@@ -275,14 +337,22 @@ NSArray *ob_get_calendars(PA_ObjectRef options, CalCalendarStore *calendarStore)
                         if(o){
                             NSString *uid = ob_get_v(o, L"uid");
                             if(uid){
+#if USE_EK_CALENDAR_ITEM
+                                EKCalendar *calendar = [calendarStore calendarWithIdentifier:uid];
+#else
                                 CalCalendar *calendar = [calendarStore calendarWithUID:uid];
+#endif
                                 if(calendar){
                                     [value addObject:calendar];
                                 }
                             }else{
                                 NSString *title = ob_get_v(o, L"title");
                                 if(title){
+#if USE_EK_CALENDAR_ITEM
+                                    NSArray *_calendars = [calendarStore calendarsForEntityType:EKEntityTypeEvent];
+#else
                                     NSArray *_calendars = [calendarStore calendars];
+#endif
                                     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"title LIKE %@", title];
                                     _calendars = [_calendars filteredArrayUsingPredicate:predicate];
                                     if([_calendars count]){
@@ -299,35 +369,80 @@ NSArray *ob_get_calendars(PA_ObjectRef options, CalCalendarStore *calendarStore)
     return value;
 }
 
-CalEvent *ob_get_event(PA_ObjectRef options, CalCalendarStore *calendarStore) {
-    
-    CalEvent *value = nil;
-    
+#pragma mark -
+#if USE_EK_CALENDAR_ITEM
+EKEvent *
+#else
+CalEvent *
+#endif
+ob_get_event(PA_ObjectRef options,
+#if USE_EK_CALENDAR_ITEM
+                      EKEventStore *calendarStore
+#else
+                      CalCalendarStore *calendarStore
+#endif
+                      ) {
+ 
+    EKEvent *value = nil;
+        
     if(options){
         if(calendarStore){
             NSString *uid = ob_get_v(options, L"uid");
             if(uid){
-                NSDate *occurrence = ob_get_d(options, L"occurrence");
-                value = [calendarStore eventWithUID:uid occurrence:occurrence];
+#if USE_EK_CALENDAR_ITEM
+                NSArray *values = [calendarStore calendarItemsWithExternalIdentifier:uid];
+                if([values count]) {
+                    value = [values objectAtIndex:0];
+                }
+#else
+                if(uid){
+                    NSDate *occurrence = ob_get_d(options, L"occurrence");
+                    value = [calendarStore eventWithUID:uid occurrence:occurrence];
+                }
+#endif
             }
         }
     }
     return value;
 }
 
-CalCalendar *ob_get_calendar(PA_ObjectRef options, CalCalendarStore *calendarStore) {
-    
-    CalCalendar *value = nil;
-    
+#if USE_EK_CALENDAR_ITEM
+EKCalendar *
+#else
+CalCalendar *
+#endif
+ob_get_calendar(PA_ObjectRef options,
+#if USE_EK_CALENDAR_ITEM
+                EKEventStore     *calendarStore
+#else
+                CalCalendarStore *calendarStore
+#endif
+                ) {
+                    
+#if USE_EK_CALENDAR_ITEM
+                    EKCalendar  *value = nil;
+#else
+                    CalCalendar *value = nil;
+#endif
     if(options){
         if(calendarStore){
             NSString *uid = ob_get_v(options, L"uid");
             if(uid){
+#if USE_EK_CALENDAR_ITEM
+                value = [calendarStore calendarWithIdentifier:uid];
+                
+#else
                 value = [calendarStore calendarWithUID:uid];
+#endif
             }else{
                 NSString *title = ob_get_v(options, L"title");
                 if(title){
-                    NSArray *_calendars = [calendarStore calendars];
+#if USE_EK_CALENDAR_ITEM
+                    NSArray<EKCalendar *> *_calendars = [calendarStore calendarsForEntityType:EKEntityTypeEvent];
+                    
+#else
+                    NSArray<CalCalendar > *_calendars = [calendarStore calendars];
+#endif
                     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"title LIKE %@", title];
                     _calendars = [_calendars filteredArrayUsingPredicate:predicate];
                     if([_calendars count]){
@@ -340,22 +455,26 @@ CalCalendar *ob_get_calendar(PA_ObjectRef options, CalCalendarStore *calendarSto
     return value;
 }
 
-void ob_set_event_calendar(PA_ObjectRef status, CalEvent *event) {
+void ob_set_event_calendar(PA_ObjectRef status,
+#if USE_EK_CALENDAR_ITEM
+                           EKEvent *event
+#else
+                           CalEvent *event
+#endif
+                           ) {
     
     if(status){
         
         PA_ObjectRef _calendar = PA_CreateObject();
         
         if(event){
+#if USE_EK_CALENDAR_ITEM
+            EKCalendar *calendar = event.calendar;
+#else
             CalCalendar *calendar = event.calendar;
+#endif
             if(calendar){
-                ob_set_v(_calendar, L"title", calendar.title);
-                ob_set_v(_calendar, L"uid", calendar.uid);
-                ob_set_v(_calendar, L"notes", calendar.notes);
-                ob_set_v(_calendar, L"type", calendar.type);
-                
-                ob_set_b(_calendar, L"isEditable", calendar.isEditable);
-                ob_set_n(_calendar, L"color", calendar.color ? getColorRGB(calendar.color) : 0L);
+                ob_set_calendar(_calendar, calendar);
             }
         }
         
@@ -363,11 +482,19 @@ void ob_set_event_calendar(PA_ObjectRef status, CalEvent *event) {
     }
 }
 
-void ob_set_event_prop(PA_ObjectRef status, PA_ObjectRef options, CalEvent *event) {
-    
+void ob_set_event_prop(PA_ObjectRef status, PA_ObjectRef options,
+                       
+#if USE_EK_CALENDAR_ITEM
+                       EKEvent *event
+#else
+                       CalEvent *event
+#endif
+                       ) {
+
     if(status){
         if(options){
             if(event){
+                
                 NSDate *startDate = ob_get_d(options, L"startDate");
                 NSDate *endDate = ob_get_d(options, L"endDate");
                 
@@ -399,7 +526,11 @@ void ob_set_event_prop(PA_ObjectRef status, PA_ObjectRef options, CalEvent *even
                         }
                         
                         if(ob_is_defined(options, L"isAllDay")){
+#if USE_EK_CALENDAR_ITEM
+                            event.allDay = ob_get_b(options, L"isAllDay");
+#else
                             event.isAllDay = ob_get_b(options, L"isAllDay");
+#endif
                         }
                         
                         NSString *url = ob_get_v(options, L"url");
@@ -407,7 +538,11 @@ void ob_set_event_prop(PA_ObjectRef status, PA_ObjectRef options, CalEvent *even
                         if(url){
                             NSURL *_url = [[NSURL alloc]initWithString:url];
                             if(_url){
+#if USE_EK_CALENDAR_ITEM
+                                event.URL = _url;
+#else
                                 event.url = _url;
+#endif
                             }
                             [url release];
                         }
@@ -416,41 +551,69 @@ void ob_set_event_prop(PA_ObjectRef status, PA_ObjectRef options, CalEvent *even
                             
                             PA_ObjectRef _recurrenceRule = ob_get_o(options, L"recurrenceRule");
                             if(_recurrenceRule){
-                                
-                                CalRecurrenceType recurrenceType = CalRecurrenceDaily;
-                                CalRecurrenceRule *recurrenceRule = nil;
-//                                CalRecurrenceEnd *recurrenceEnd = nil;
+#if USE_EK_CALENDAR_ITEM
+                                EKRecurrenceEnd *recurrenceEnd = nil;
+#else
+                                CalRecurrenceEnd *recurrenceEnd = nil;
+                                NSUInteger dayOfTheWeek = 0;
+                                NSUInteger weekOfTheMonth = 0;
+#endif
                                 NSDate *endDate = nil;
                                 NSUInteger occurrenceCount = 0;
                                 NSUInteger recurrenceInterval = 0;
-                                NSUInteger dayOfTheWeek = 0;
-                                NSUInteger weekOfTheMonth = 0;
-                                
-                                BOOL usesEndDate = FALSE;
-                                
+
+#if USE_EK_CALENDAR_ITEM
+                                EKRecurrenceFrequency recurrenceType = EKRecurrenceFrequencyDaily;
+#else
+                                CalRecurrenceType recurrenceType = CalRecurrenceDaily;
+#endif
                                 if(ob_is_defined(_recurrenceRule, L"recurrenceType")){
+#if USE_EK_CALENDAR_ITEM
+                                    recurrenceType = (EKRecurrenceFrequency)ob_get_n(_recurrenceRule, L"recurrenceType");
+#else
                                     recurrenceType = (CalRecurrenceType)ob_get_n(_recurrenceRule, L"recurrenceType");
+#endif
                                 }
                                 
                                 if(ob_is_defined(_recurrenceRule, L"recurrenceInterval")){
                                     recurrenceInterval = (NSUInteger)ob_get_n(_recurrenceRule, L"recurrenceInterval");
                                 }
                                 
+                                
+#if USE_EK_CALENDAR_ITEM
+#else
                                 if(ob_is_defined(_recurrenceRule, L"dayOfTheWeek")){
                                     dayOfTheWeek = (NSUInteger)ob_get_n(_recurrenceRule, L"dayOfTheWeek");
                                 }
-                                
                                 if(ob_is_defined(_recurrenceRule, L"weekOfTheMonth")){
                                     weekOfTheMonth = (NSUInteger)ob_get_n(_recurrenceRule, L"weekOfTheMonth");
                                 }
+#endif
 
                                 if(ob_is_defined(_recurrenceRule, L"recurrenceEnd")){
                                     PA_ObjectRef _recurrenceEnd = ob_get_o(_recurrenceRule, L"recurrenceEnd");
                                     if(_recurrenceEnd){
-                                        usesEndDate = ob_get_b(_recurrenceEnd, L"usesEndDate");
                                         endDate = ob_get_d(_recurrenceEnd, L"endDate");
                                         occurrenceCount = ob_get_n(_recurrenceEnd, L"occurrenceCount");
+#if USE_EK_CALENDAR_ITEM
+                                        if(endDate) {
+                                            recurrenceEnd = [EKRecurrenceEnd recurrenceEndWithEndDate:endDate];
+                                        }
+                                        
+                                        if(occurrenceCount > 0) {
+                                            recurrenceEnd = [EKRecurrenceEnd recurrenceEndWithOccurrenceCount:occurrenceCount];
+                                        }
+#else
+                                        if(endDate) {
+                                            recurrenceEnd = [CalRecurrenceEnd recurrenceEndWithEndDate:endDate];
+                                        }
+                                        
+                                        if(occurrenceCount > 0) {
+                                            recurrenceEnd = [CalRecurrenceEnd recurrenceEndWithOccurrenceCount:occurrenceCount];
+                                        }
+#endif
                                     }
+                                    
                                 }
                                 
                                 NSMutableArray *daysOfTheWeek = [[NSMutableArray alloc]init];
@@ -481,23 +644,6 @@ void ob_set_event_prop(PA_ObjectRef status, PA_ObjectRef options, CalEvent *even
                                     }
                                 }
                                 
-                                /*
-                                 NSMutableArray *nthWeekDaysOfTheMonth = [[NSMutableArray alloc]init];
-                                 
-                                 if(ob_is_defined(_recurrenceRule, L"nthWeekDaysOfTheMonth")){
-                                     PA_CollectionRef _nthWeekDaysOfTheMonth = ob_get_c(_recurrenceRule, L"nthWeekDaysOfTheMonth");
-                                     if(_nthWeekDaysOfTheMonth){
-                                         for(PA_long32 i = 0; i < PA_GetCollectionLength(_nthWeekDaysOfTheMonth); ++i){
-                                             PA_Variable v = PA_GetCollectionElement(_nthWeekDaysOfTheMonth, i);
-                                             if(PA_GetVariableKind(v) == eVK_Real){
-                                                 [nthWeekDaysOfTheMonth addObject:[NSNumber numberWithInt:(int)PA_GetRealVariable(v)]];
-                                             }
-                                         }
-                                     }
-                                 }
-                                 */
-
-                                
                                 NSMutableArray *monthsOfTheYear = [[NSMutableArray alloc]init];
                                 
                                 if(ob_is_defined(_recurrenceRule, L"monthsOfTheYear")){
@@ -511,192 +657,197 @@ void ob_set_event_prop(PA_ObjectRef status, PA_ObjectRef options, CalEvent *even
                                         }
                                     }
                                 }
-
-                                switch (recurrenceType){
-                                    case CalRecurrenceDaily:
-                                    {
-                                        if(endDate){
-                                            recurrenceRule = [[CalRecurrenceRule alloc]initDailyRecurrenceWithInterval:recurrenceInterval
-                                                                                                                   end:[CalRecurrenceEnd recurrenceEndWithEndDate:endDate]];
-                                        }else{
-                                            if(occurrenceCount){
-                                                recurrenceRule = [[CalRecurrenceRule alloc]initDailyRecurrenceWithInterval:recurrenceInterval end:[CalRecurrenceEnd recurrenceEndWithOccurrenceCount:occurrenceCount]];
-                                            }else{
-                                                recurrenceRule = [[CalRecurrenceRule alloc]initDailyRecurrenceWithInterval:recurrenceInterval end:nil];
+                                
+                                NSMutableArray *weeksOfTheYear = [[NSMutableArray alloc]init];
+                                
+                                if(ob_is_defined(_recurrenceRule, L"weeksOfTheYear")){
+                                    PA_CollectionRef _weeksOfTheYear = ob_get_c(_recurrenceRule, L"weeksOfTheYear");
+                                    if(_weeksOfTheYear){
+                                        for(PA_long32 i = 0; i < PA_GetCollectionLength(_weeksOfTheYear); ++i){
+                                            PA_Variable v = PA_GetCollectionElement(_weeksOfTheYear, i);
+                                            if(PA_GetVariableKind(v) == eVK_Real){
+                                                [weeksOfTheYear addObject:[NSNumber numberWithInt:(int)PA_GetRealVariable(v)]];
                                             }
                                         }
-                                        event.recurrenceRule = recurrenceRule;
-                                        [recurrenceRule release];
+                                    }
+                                }
+                                
+                                NSMutableArray *daysOfTheYear = [[NSMutableArray alloc]init];
+                                
+                                if(ob_is_defined(_recurrenceRule, L"daysOfTheYear")){
+                                    PA_CollectionRef _daysOfTheYear = ob_get_c(_recurrenceRule, L"daysOfTheYear");
+                                    if(_daysOfTheYear){
+                                        for(PA_long32 i = 0; i < PA_GetCollectionLength(_daysOfTheYear); ++i){
+                                            PA_Variable v = PA_GetCollectionElement(_daysOfTheYear, i);
+                                            if(PA_GetVariableKind(v) == eVK_Real){
+                                                [daysOfTheYear addObject:[NSNumber numberWithInt:(int)PA_GetRealVariable(v)]];
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                NSMutableArray *setPositions = [[NSMutableArray alloc]init];
+                                
+                                if(ob_is_defined(_recurrenceRule, L"setPositions")){
+                                    PA_CollectionRef _setPositions = ob_get_c(_recurrenceRule, L"setPositions");
+                                    if(_setPositions){
+                                        for(PA_long32 i = 0; i < PA_GetCollectionLength(_setPositions); ++i){
+                                            PA_Variable v = PA_GetCollectionElement(_setPositions, i);
+                                            if(PA_GetVariableKind(v) == eVK_Real){
+                                                [setPositions addObject:[NSNumber numberWithInt:(int)PA_GetRealVariable(v)]];
+                                            }
+                                        }
+                                    }
+                                }
+#if USE_EK_CALENDAR_ITEM
+                                EKRecurrenceRule *recurrenceRule = [[EKRecurrenceRule alloc]initRecurrenceWithFrequency:recurrenceType
+                                                                                                               interval:recurrenceInterval
+                                                                                                          daysOfTheWeek:[daysOfTheWeek count] ? daysOfTheWeek : nil
+                                                                                                         daysOfTheMonth:[daysOfTheMonth count] ? daysOfTheMonth : nil
+                                                                                                        monthsOfTheYear:[monthsOfTheYear count] ? monthsOfTheYear : nil
+                                                                                                         weeksOfTheYear:[weeksOfTheYear count] ? weeksOfTheYear : nil
+                                                                                                          daysOfTheYear:[daysOfTheYear count] ? daysOfTheYear : nil
+                                                                                                           setPositions:[setPositions count] ? setPositions : nil
+                                                                                                                    end:recurrenceEnd];
+                                if(recurrenceRule) {
+                                    [event addRecurrenceRule:recurrenceRule];
+                                    [recurrenceRule release];
+                                }
+#else
+                                switch (recurrenceType){
+                                        
+                                    case CalRecurrenceDaily:
+                                    {
+                                        CalRecurrenceRule *recurrenceRule = [[CalRecurrenceRule alloc]initDailyRecurrenceWithInterval:recurrenceInterval
+                                                                                                                                  end:recurrenceEnd];
+                                        if(recurrenceRule) {
+                                            event.recurrenceRule = recurrenceRule;
+                                            [recurrenceRule release];
+                                        }
+                                        
                                     }
                                         break;
                                         
                                     case CalRecurrenceWeekly:
                                     {
                                         if([daysOfTheWeek count]){
-                                            if(endDate){
-                                                recurrenceRule = [[CalRecurrenceRule alloc]initWeeklyRecurrenceWithInterval:recurrenceInterval
-                                                                                                           forDaysOfTheWeek:daysOfTheWeek
-                                                                                                                        end:[CalRecurrenceEnd recurrenceEndWithEndDate:endDate]];
-                                            }else{
-                                                if(occurrenceCount){
-                                                    recurrenceRule = [[CalRecurrenceRule alloc]initWeeklyRecurrenceWithInterval:recurrenceInterval
-                                                                                                               forDaysOfTheWeek:daysOfTheWeek
-                                                                                                                            end:[CalRecurrenceEnd recurrenceEndWithOccurrenceCount:occurrenceCount]];
-                                                }else{
-                                                    recurrenceRule = [[CalRecurrenceRule alloc]initWeeklyRecurrenceWithInterval:recurrenceInterval
-                                                                                                               forDaysOfTheWeek:daysOfTheWeek
-                                                                                                                            end:nil];
-                                                }
+                                            
+                                            CalRecurrenceRule *recurrenceRule = [[CalRecurrenceRule alloc]initWeeklyRecurrenceWithInterval:recurrenceInterval
+                                                                                                                          forDaysOfTheWeek:daysOfTheWeek
+                                                                                                                                       end:recurrenceEnd];
+                                            if(recurrenceRule) {
+                                                event.recurrenceRule = recurrenceRule;
+                                                [recurrenceRule release];
                                             }
+                                            
                                         }else{
-                                            if(endDate){
-                                                recurrenceRule = [[CalRecurrenceRule alloc]initWeeklyRecurrenceWithInterval:recurrenceInterval
-                                                                                                                        end:[CalRecurrenceEnd recurrenceEndWithEndDate:endDate]];
-                                            }else{
-                                                if(occurrenceCount){
-                                                    recurrenceRule = [[CalRecurrenceRule alloc]initWeeklyRecurrenceWithInterval:recurrenceInterval
-                                                                                                                            end:[CalRecurrenceEnd recurrenceEndWithOccurrenceCount:occurrenceCount]];
-                                                }else{
-                                                    recurrenceRule = [[CalRecurrenceRule alloc]initWeeklyRecurrenceWithInterval:recurrenceInterval end:nil];
-                                                }
+                                            CalRecurrenceRule *recurrenceRule = [[CalRecurrenceRule alloc]initWeeklyRecurrenceWithInterval:recurrenceInterval
+                                                                                                                                       end:recurrenceEnd];
+                                            if(recurrenceRule) {
+                                                event.recurrenceRule = recurrenceRule;
+                                                [recurrenceRule release];
                                             }
+                                            
                                         }
-                                        event.recurrenceRule = recurrenceRule;
-                                        [recurrenceRule release];
+                                        
                                     }
                                         break;
                                         
                                     case CalRecurrenceMonthly:
                                     {
                                         if([daysOfTheMonth count]){
-                                            if(endDate){
-                                                recurrenceRule = [[CalRecurrenceRule alloc]initMonthlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                           forDaysOfTheMonth:daysOfTheMonth
-                                                                                                                         end:[CalRecurrenceEnd recurrenceEndWithEndDate:endDate]];
-                                            }else{
-                                                if(occurrenceCount){
-                                                    recurrenceRule = [[CalRecurrenceRule alloc]initMonthlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                               forDaysOfTheMonth:daysOfTheMonth
-                                                                                                                             end:[CalRecurrenceEnd recurrenceEndWithOccurrenceCount:occurrenceCount]];
-                                                }else{
-                                                    recurrenceRule = [[CalRecurrenceRule alloc]initMonthlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                               forDaysOfTheMonth:daysOfTheMonth end:nil];
-                                                }
+                                            CalRecurrenceRule *recurrenceRule = [[CalRecurrenceRule alloc]initMonthlyRecurrenceWithInterval:recurrenceInterval
+                                                                                                                          forDaysOfTheMonth:daysOfTheMonth
+                                                                                                                                        end:recurrenceEnd];
+                                            if(recurrenceRule) {
+                                                event.recurrenceRule = recurrenceRule;
+                                                [recurrenceRule release];
                                             }
                                         }else{
                                             
                                             if(dayOfTheWeek && weekOfTheMonth){
-                                                if(endDate){
-                                                    
-                                                    
-                                                    recurrenceRule = [[CalRecurrenceRule alloc]initMonthlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                                 forDayOfTheWeek:dayOfTheWeek
-                                                                                                               forWeekOfTheMonth:weekOfTheMonth
-                                                                                                                             end:[CalRecurrenceEnd recurrenceEndWithEndDate:endDate]];
-                                                }else{
-                                                    if(occurrenceCount){
-                                                        recurrenceRule = [[CalRecurrenceRule alloc]initMonthlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                                     forDayOfTheWeek:dayOfTheWeek
-                                                                                                                   forWeekOfTheMonth:weekOfTheMonth
-                                                                                                                                 end:[CalRecurrenceEnd recurrenceEndWithOccurrenceCount:occurrenceCount]];
-                                                    }else{
-                                                        recurrenceRule = [[CalRecurrenceRule alloc]initMonthlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                                     forDayOfTheWeek:dayOfTheWeek
-                                                                                                                   forWeekOfTheMonth:weekOfTheMonth
-                                                                                                                                 end:nil];
-                                                    }
+                                                CalRecurrenceRule *recurrenceRule = [[CalRecurrenceRule alloc]initMonthlyRecurrenceWithInterval:recurrenceInterval
+                                                                                                                                forDayOfTheWeek:dayOfTheWeek
+                                                                                                                              forWeekOfTheMonth:weekOfTheMonth
+                                                                                                                                            end:recurrenceEnd];
+                                                if(recurrenceRule) {
+                                                    event.recurrenceRule = recurrenceRule;
+                                                    [recurrenceRule release];
                                                 }
                                             }else{
-                                                if(endDate){
-                                                    recurrenceRule = [[CalRecurrenceRule alloc]initMonthlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                                             end:[CalRecurrenceEnd recurrenceEndWithEndDate:endDate]];
-                                                }else{
-                                                    if(occurrenceCount){
-                                                        recurrenceRule = [[CalRecurrenceRule alloc]initMonthlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                                                 end:[CalRecurrenceEnd recurrenceEndWithOccurrenceCount:occurrenceCount]];
-                                                    }else{
-                                                        recurrenceRule = [[CalRecurrenceRule alloc]initMonthlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                                                 end:nil];
-                                                    }
+                                                CalRecurrenceRule *recurrenceRule = [[CalRecurrenceRule alloc]initMonthlyRecurrenceWithInterval:recurrenceInterval
+                                                                                                                                            end:recurrenceEnd];
+                                                if(recurrenceRule) {
+                                                    event.recurrenceRule = recurrenceRule;
+                                                    [recurrenceRule release];
                                                 }
                                             }
                                         }
-                                        event.recurrenceRule = recurrenceRule;
-                                        [recurrenceRule release];
                                     }
                                         break;
                                     case CalRecurrenceYearly:
                                     {
                                         if([monthsOfTheYear count]){
                                             
-                                            if(endDate){
-                                                recurrenceRule = [[CalRecurrenceRule alloc]initYearlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                            forDayOfTheWeek:dayOfTheWeek
-                                                                                                          forWeekOfTheMonth:weekOfTheMonth
-                                                                                                         forMonthsOfTheYear:monthsOfTheYear
-                                                                                                                        end:[CalRecurrenceEnd recurrenceEndWithEndDate:endDate]];
-                                            }else{
-                                                if(occurrenceCount){
-                                                    recurrenceRule = [[CalRecurrenceRule alloc]initYearlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                                forDayOfTheWeek:dayOfTheWeek
-                                                                                                              forWeekOfTheMonth:weekOfTheMonth
-                                                                                                             forMonthsOfTheYear:monthsOfTheYear
-                                                                                                                            end:[CalRecurrenceEnd recurrenceEndWithOccurrenceCount:occurrenceCount]];
-                                                }else{
-                                                    recurrenceRule = [[CalRecurrenceRule alloc]initYearlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                                forDayOfTheWeek:dayOfTheWeek
-                                                                                                              forWeekOfTheMonth:weekOfTheMonth
-                                                                                                             forMonthsOfTheYear:monthsOfTheYear
-                                                                                                                            end:nil];
-                                                }
+                                            CalRecurrenceRule *recurrenceRule = [[CalRecurrenceRule alloc]initYearlyRecurrenceWithInterval:recurrenceInterval
+                                                                                                                           forDayOfTheWeek:dayOfTheWeek
+                                                                                                                         forWeekOfTheMonth:weekOfTheMonth
+                                                                                                                        forMonthsOfTheYear:monthsOfTheYear
+                                                                                                                                       end:recurrenceEnd];
+                                            if(recurrenceRule) {
+                                                event.recurrenceRule = recurrenceRule;
+                                                [recurrenceRule release];
                                             }
                                             
                                         }else{
                                             if([monthsOfTheYear count]){
-                                                if(endDate){
-                                                    recurrenceRule = [[CalRecurrenceRule alloc]initYearlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                             forMonthsOfTheYear:monthsOfTheYear
-                                                                                                                            end:[CalRecurrenceEnd recurrenceEndWithEndDate:endDate]];
-                                                }else{
-                                                    if(occurrenceCount){
-                                                        recurrenceRule = [[CalRecurrenceRule alloc]initYearlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                                 forMonthsOfTheYear:monthsOfTheYear
-                                                                                                                                end:[CalRecurrenceEnd recurrenceEndWithOccurrenceCount:occurrenceCount]];
-                                                    }else{
-                                                        recurrenceRule = [[CalRecurrenceRule alloc]initYearlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                                 forMonthsOfTheYear:monthsOfTheYear
-                                                                                                                                end:nil];
-                                                    }
+                                                CalRecurrenceRule *recurrenceRule = [[CalRecurrenceRule alloc]initYearlyRecurrenceWithInterval:recurrenceInterval
+                                                                                                                            forMonthsOfTheYear:monthsOfTheYear
+                                                                                                                                           end:recurrenceEnd];
+                                                if(recurrenceRule) {
+                                                    event.recurrenceRule = recurrenceRule;
+                                                    [recurrenceRule release];
                                                 }
                                             }else{
-                                                if(endDate){
-                                                    recurrenceRule = [[CalRecurrenceRule alloc]initYearlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                                            end:[CalRecurrenceEnd recurrenceEndWithEndDate:endDate]];
-                                                }else{
-                                                    if(occurrenceCount){
-                                                        recurrenceRule = [[CalRecurrenceRule alloc]initYearlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                                                end:[CalRecurrenceEnd recurrenceEndWithOccurrenceCount:occurrenceCount]];
-                                                    }else{
-                                                        recurrenceRule = [[CalRecurrenceRule alloc]initYearlyRecurrenceWithInterval:recurrenceInterval
-                                                                                                                                end:nil];
-                                                    }
+                                                CalRecurrenceRule *recurrenceRule = [[CalRecurrenceRule alloc]initYearlyRecurrenceWithInterval:recurrenceInterval
+                                                                                                                                           end:recurrenceEnd];
+                                                if(recurrenceRule) {
+                                                    event.recurrenceRule = recurrenceRule;
+                                                    [recurrenceRule release];
                                                 }
                                             }
                                         }
-                                        
-                                        event.recurrenceRule = recurrenceRule;
-                                        [recurrenceRule release];
                                     }
                                         break;
                                 }
-                                    
+#endif
+                                
                                 [daysOfTheWeek release];
                                 [daysOfTheMonth release];
-//                                [nthWeekDaysOfTheMonth release];
                                 [monthsOfTheYear release];
-                        }
+                                
+                                [weeksOfTheYear release];
+                                [daysOfTheYear release];
+                                [setPositions release];
 
+                            } else {
+#if USE_EK_CALENDAR_ITEM
+                                if([event hasRecurrenceRules]) {
+                                    NSArray<EKRecurrenceRule *> *recurrenceRules = event.recurrenceRules;
+                                    if(recurrenceRules) {
+                                        if(recurrenceRules.count > 0) {
+                                            EKRecurrenceRule *recurrenceRule = recurrenceRules.firstObject;
+                                            [event removeRecurrenceRule:recurrenceRule];
+                                        }
+                                    }
+                                }
+#else
+                                event.recurrenceRule = nil;
+#endif
+                            }
+  
                         }
+                        
                     }else{
                         ob_set_b(status, L"success", false);
                         ob_set_s(status, L"errorMessage", "invalid endDate");
@@ -710,22 +861,55 @@ void ob_set_event_prop(PA_ObjectRef status, PA_ObjectRef options, CalEvent *even
     }
 }
 
-void ob_copy_event(PA_ObjectRef _event, CalEvent *event, BOOL with_calendar = TRUE) {
+void ob_copy_event(PA_ObjectRef _event,
+#if USE_EK_CALENDAR_ITEM
+                   EKEvent *event,
+#else
+                   CalEvent *event,
+#endif
+                   BOOL with_calendar = TRUE) {
     
     if(_event){
         if(event){
+            
+#if USE_EK_CALENDAR_ITEM
+            ob_set_v(_event, L"uid", event.calendarItemExternalIdentifier);
+            ob_set_u(_event, L"url", event.URL);
+            ob_set_d(_event, L"occurrence", event.occurrenceDate);
+            ob_set_d(_event, L"dateStamp", event.lastModifiedDate);
+            ob_set_d(_event, L"creationDate", event.creationDate);
+            
+            if(event.timeZone) {
+                
+                NSTimeZone *timezone = event.timeZone;
+                
+                PA_ObjectRef _timeZone = PA_CreateObject();
+                
+                ob_set_v(_timeZone, L"name", timezone.name);
+                ob_set_v(_timeZone, L"abbreviation", timezone.abbreviation);
+                ob_set_b(_timeZone, L"daylightSavingTime", timezone.daylightSavingTime);
+                ob_set_n(_timeZone, L"daylightSavingTimeOffset", timezone.daylightSavingTimeOffset);
+                ob_set_n(_timeZone, L"secondsFromGMT", timezone.secondsFromGMT);
+                ob_set_d(_timeZone, L"nextDaylightSavingTimeTransition", timezone.nextDaylightSavingTimeTransition);
+                                
+                ob_set_o(_event, L"timeZone", _timeZone);
+
+            }else{
+                ob_set_0(_event, L"timeZone");
+            }
+#else
             ob_set_v(_event, L"uid", event.uid);
+            ob_set_u(_event, L"url", event.url);
+            ob_set_d(_event, L"occurrence", event.occurrence);
+            ob_set_d(_event, L"dateStamp", event.dateStamp);
+#endif
             ob_set_v(_event, L"location", event.location);
             ob_set_v(_event, L"notes", event.notes);
             ob_set_v(_event, L"title", event.title);
             
-            ob_set_u(_event, L"url", event.url);
-            
             ob_set_d(_event, L"endDate", event.endDate);
-            ob_set_d(_event, L"occurrence", event.occurrence);
             ob_set_d(_event, L"startDate", event.startDate);
-            ob_set_d(_event, L"dateStamp", event.dateStamp);
-            
+
             ob_set_b(_event, L"isAllDay", event.isAllDay);
             ob_set_b(_event, L"isDetached", event.isDetached);
             
@@ -738,9 +922,48 @@ void ob_copy_event(PA_ObjectRef _event, CalEvent *event, BOOL with_calendar = TR
             if(alarms){
                 
                 PA_CollectionRef _alarms = PA_CreateCollection();
-                
+
                 for(unsigned int i = 0; i < [alarms count]; ++i)
                 {
+#if USE_EK_CALENDAR_ITEM
+                    if([[alarms objectAtIndex:i]isMemberOfClass:[EKAlarm class]])
+                    {
+                        EKAlarm *alarm = [alarms objectAtIndex:i];
+                        
+                        PA_ObjectRef _alarm = PA_CreateObject();
+                        
+                        switch (alarm.type) {
+                            case EKAlarmTypeAudio:
+                                ob_set_v(_alarm, L"action", @"Sound"); /* CalAlarmActionSound, not "Audio" */
+                                break;
+                            case EKAlarmTypeDisplay:
+                                ob_set_v(_alarm, L"action", @"Display");
+                                break;
+                            case EKAlarmTypeEmail:
+                                ob_set_v(_alarm, L"action", @"Email");
+                                break;
+                            case EKAlarmTypeProcedure:
+                                ob_set_v(_alarm, L"action", @"Procedure");
+                                break;
+                        }
+                        
+                        ob_set_v(_alarm, L"emailAddress", alarm.emailAddress);
+                        ob_set_v(_alarm, L"sound", alarm.soundName);
+                        
+                        if(alarm.relativeOffset){
+                            ob_set_n(_alarm, L"relativeTrigger", alarm.relativeOffset);
+                        }else{
+                            ob_set_0(_alarm, L"relativeTrigger");
+                        }
+                        
+                        ob_set_d(_alarm, L"absoluteTrigger", alarm.absoluteDate);
+                        
+                        PA_Variable v = PA_CreateVariable(eVK_Object);
+                        PA_SetObjectVariable(&v, _alarm);
+                        PA_SetCollectionElement(_alarms, PA_GetCollectionLength(_alarms), v);
+                        PA_ClearVariable(&v);
+                    }
+#else
                     if([[alarms objectAtIndex:i]isMemberOfClass:[CalAlarm class]])
                     {
                         CalAlarm *alarm = [alarms objectAtIndex:i];
@@ -765,6 +988,8 @@ void ob_copy_event(PA_ObjectRef _event, CalEvent *event, BOOL with_calendar = TR
                         PA_SetCollectionElement(_alarms, PA_GetCollectionLength(_alarms), v);
                         PA_ClearVariable(&v);
                     }
+#endif
+                    
                 }
                 
                 ob_set_c(_event, L"alarms", _alarms);
@@ -778,6 +1003,90 @@ void ob_copy_event(PA_ObjectRef _event, CalEvent *event, BOOL with_calendar = TR
                 
                 for(unsigned int i = 0; i < [attendees count]; ++i)
                 {
+#if USE_EK_CALENDAR_ITEM
+                    if([[attendees objectAtIndex:i]isMemberOfClass:[EKParticipant class]])
+                    {
+                        EKParticipant *attendee = [attendees objectAtIndex:i];
+                        
+                        PA_ObjectRef _attendee = PA_CreateObject();
+                        
+                        ob_set_b(_attendee, L"isCurrentUser", attendee.currentUser);
+
+                        switch (attendee.participantRole) {
+                            case EKParticipantRoleNonParticipant:
+                                ob_set_v(_attendee, L"role", @"NonParticipant");
+                                break;
+                            case EKParticipantRoleChair:
+                                ob_set_v(_attendee, L"role", @"Chair");
+                                break;
+                            case EKParticipantRoleOptional:
+                                ob_set_v(_attendee, L"role", @"Optional");
+                                break;
+                            case EKParticipantRoleRequired:
+                                ob_set_v(_attendee, L"role", @"Required");
+                                break;
+                            case EKParticipantRoleUnknown:
+                            default:
+                                ob_set_v(_attendee, L"role", @"Unknown");
+                                break;
+                        }
+                        
+                        switch (attendee.participantType) {
+                            case EKParticipantTypeResource:
+                                ob_set_v(_attendee, L"type", @"Resource");
+                                break;
+                            case EKParticipantTypeRoom:
+                                ob_set_v(_attendee, L"type", @"Room");
+                                break;
+                            case EKParticipantTypePerson:
+                                ob_set_v(_attendee, L"type", @"Person");
+                                break;
+                            case EKParticipantTypeGroup:
+                                ob_set_v(_attendee, L"type", @"Group");
+                                break;
+                            case EKParticipantTypeUnknown:
+                            default:
+                                ob_set_v(_attendee, L"type", @"Unknown");
+                                break;
+                        }
+                        
+                        switch (attendee.participantStatus) {
+                            case EKParticipantStatusPending:
+                                ob_set_v(_attendee, L"status", @"Pending");
+                                break;
+                            case EKParticipantStatusAccepted:
+                                ob_set_v(_attendee, L"status", @"Accepted");
+                                break;
+                            case EKParticipantStatusDeclined:
+                                ob_set_v(_attendee, L"status", @"Declined");
+                                break;
+                            case EKParticipantStatusTentative:
+                                ob_set_v(_attendee, L"status", @"Tentative");
+                                break;
+                            case EKParticipantStatusDelegated:
+                                ob_set_v(_attendee, L"status", @"Delegated");
+                                break;
+                            case EKParticipantStatusCompleted:
+                                ob_set_v(_attendee, L"status", @"Completed");
+                                break;
+                            case EKParticipantStatusInProcess:
+                                ob_set_v(_attendee, L"status", @"InProcess");
+                                break;
+                            case EKParticipantStatusUnknown:
+                            default:
+                                ob_set_v(_attendee, L"status", @"Unknown");
+                                break;
+                        }
+                        
+                        ob_set_v(_attendee, L"commonName", attendee.name);
+                        ob_set_u(_attendee, L"address", attendee.URL);
+                        
+                        PA_Variable v = PA_CreateVariable(eVK_Object);
+                        PA_SetObjectVariable(&v, _attendee);
+                        PA_SetCollectionElement(_attendees, PA_GetCollectionLength(_attendees), v);
+                        PA_ClearVariable(&v);
+                    }
+#else
                     if([[attendees objectAtIndex:i]isMemberOfClass:[CalAttendee class]])
                     {
                         CalAttendee *attendee = [attendees objectAtIndex:i];
@@ -794,25 +1103,48 @@ void ob_copy_event(PA_ObjectRef _event, CalEvent *event, BOOL with_calendar = TR
                         PA_SetCollectionElement(_attendees, PA_GetCollectionLength(_attendees), v);
                         PA_ClearVariable(&v);
                     }
+#endif
+  
                 }
                 
                 ob_set_c(_event, L"attendees", _attendees);
             }
-            
+           
+#if USE_EK_CALENDAR_ITEM
+            EKRecurrenceRule *recurrenceRule = nil;
+            if([event hasRecurrenceRules]) {
+                NSArray<EKRecurrenceRule *> *recurrenceRules = event.recurrenceRules;
+                if(recurrenceRules) {
+                    if(recurrenceRules.count > 0) {
+                        recurrenceRule = recurrenceRules.firstObject;
+                    }
+                }
+            }
+#else
             CalRecurrenceRule *recurrenceRule = event.recurrenceRule;
-            
+#endif
+
             if(recurrenceRule){
                 
                 PA_ObjectRef _recurrenceRule = PA_CreateObject();
-                
+#if USE_EK_CALENDAR_ITEM
+                ob_set_n(_recurrenceRule, L"recurrenceInterval", recurrenceRule.interval);
+                ob_set_n(_recurrenceRule, L"recurrenceType", recurrenceRule.frequency);
+#else
                 ob_set_n(_recurrenceRule, L"recurrenceInterval", recurrenceRule.recurrenceInterval);
-                ob_set_n(_recurrenceRule, L"firstDayOfTheWeek", recurrenceRule.firstDayOfTheWeek);
                 ob_set_n(_recurrenceRule, L"recurrenceType", recurrenceRule.recurrenceType);
-                
+#endif
+
+                ob_set_n(_recurrenceRule, L"firstDayOfTheWeek", recurrenceRule.firstDayOfTheWeek);
+                                
                 PA_ObjectRef _recurrenceEnd = PA_CreateObject();
                 
                 if(recurrenceRule.recurrenceEnd){
+                    
+#if USE_EK_CALENDAR_ITEM
+#else
                     ob_set_b(_recurrenceEnd, L"usesEndDate", recurrenceRule.recurrenceEnd.usesEndDate);
+#endif
                     ob_set_d(_recurrenceEnd, L"endDate", recurrenceRule.recurrenceEnd.endDate);
                     ob_set_n(_recurrenceEnd, L"occurrenceCount", recurrenceRule.recurrenceEnd.occurrenceCount);
                 }
@@ -842,7 +1174,57 @@ void ob_copy_event(PA_ObjectRef _event, CalEvent *event, BOOL with_calendar = TR
                     }
                     ob_set_c(_recurrenceRule, L"daysOfTheMonth", _daysOfTheMonth);
                 }
+
+                if(recurrenceRule.monthsOfTheYear){
+                    PA_CollectionRef _monthsOfTheYear = PA_CreateCollection();
+                    for(unsigned int i = 0; i < [recurrenceRule.monthsOfTheYear count]; ++i)
+                    {
+                        PA_Variable v = PA_CreateVariable(eVK_Longint);
+                        PA_SetLongintVariable(&v, (PA_long32)[(NSNumber *)[recurrenceRule.monthsOfTheYear objectAtIndex:i]intValue]);
+                        PA_SetCollectionElement(_monthsOfTheYear, PA_GetCollectionLength(_monthsOfTheYear), v);
+                        PA_ClearVariable(&v);
+                    }
+                    ob_set_c(_recurrenceRule, L"monthsOfTheYear", _monthsOfTheYear);
+                }
                 
+#if USE_EK_CALENDAR_ITEM
+                
+                if(recurrenceRule.daysOfTheYear){
+                    PA_CollectionRef _daysOfTheYear = PA_CreateCollection();
+                    for(unsigned int i = 0; i < [recurrenceRule.daysOfTheYear count]; ++i)
+                    {
+                        PA_Variable v = PA_CreateVariable(eVK_Longint);
+                        PA_SetLongintVariable(&v, (PA_long32)[(NSNumber *)[recurrenceRule.daysOfTheYear objectAtIndex:i]intValue]);
+                        PA_SetCollectionElement(_daysOfTheYear, PA_GetCollectionLength(_daysOfTheYear), v);
+                        PA_ClearVariable(&v);
+                    }
+                    ob_set_c(_recurrenceRule, L"daysOfTheYear", _daysOfTheYear);
+                }
+
+                if(recurrenceRule.weeksOfTheYear){
+                    PA_CollectionRef _weeksOfTheYear = PA_CreateCollection();
+                    for(unsigned int i = 0; i < [recurrenceRule.weeksOfTheYear count]; ++i)
+                    {
+                        PA_Variable v = PA_CreateVariable(eVK_Longint);
+                        PA_SetLongintVariable(&v, (PA_long32)[(NSNumber *)[recurrenceRule.weeksOfTheYear objectAtIndex:i]intValue]);
+                        PA_SetCollectionElement(_weeksOfTheYear, PA_GetCollectionLength(_weeksOfTheYear), v);
+                        PA_ClearVariable(&v);
+                    }
+                    ob_set_c(_recurrenceRule, L"weeksOfTheYear", _weeksOfTheYear);
+                }
+                
+                if(recurrenceRule.setPositions){
+                    PA_CollectionRef _setPositions = PA_CreateCollection();
+                    for(unsigned int i = 0; i < [recurrenceRule.setPositions count]; ++i)
+                    {
+                        PA_Variable v = PA_CreateVariable(eVK_Longint);
+                        PA_SetLongintVariable(&v, (PA_long32)[(NSNumber *)[recurrenceRule.setPositions objectAtIndex:i]intValue]);
+                        PA_SetCollectionElement(_setPositions, PA_GetCollectionLength(_setPositions), v);
+                        PA_ClearVariable(&v);
+                    }
+                    ob_set_c(_recurrenceRule, L"setPositions", _setPositions);
+                }
+#else
                 if(recurrenceRule.nthWeekDaysOfTheMonth){
                     PA_CollectionRef _nthWeekDaysOfTheMonth = PA_CreateCollection();
                     for(unsigned int i = 0; i < [recurrenceRule.nthWeekDaysOfTheMonth count]; ++i)
@@ -861,19 +1243,8 @@ void ob_copy_event(PA_ObjectRef _event, CalEvent *event, BOOL with_calendar = TR
                     }
                     ob_set_c(_recurrenceRule, L"nthWeekDaysOfTheMonth", _nthWeekDaysOfTheMonth);
                 }
-                
-                if(recurrenceRule.monthsOfTheYear){
-                    PA_CollectionRef _monthsOfTheYear = PA_CreateCollection();
-                    for(unsigned int i = 0; i < [recurrenceRule.monthsOfTheYear count]; ++i)
-                    {
-                        PA_Variable v = PA_CreateVariable(eVK_Longint);
-                        PA_SetLongintVariable(&v, (PA_long32)[(NSNumber *)[recurrenceRule.monthsOfTheYear objectAtIndex:i]intValue]);
-                        PA_SetCollectionElement(_monthsOfTheYear, PA_GetCollectionLength(_monthsOfTheYear), v);
-                        PA_ClearVariable(&v);
-                    }
-                    ob_set_c(_recurrenceRule, L"monthsOfTheYear", _monthsOfTheYear);
-                }
-
+#endif
+  
                 ob_set_o(_event, L"recurrenceRule", _recurrenceRule);
             }
         }
@@ -896,7 +1267,13 @@ void ob_set_error(PA_ObjectRef status, NSError *error) {
     }
 }
 
-void ob_add_event(PA_CollectionRef _events, CalEvent *event) {
+void ob_add_event(PA_CollectionRef _events,
+#if USE_EK_CALENDAR_ITEM
+                  EKEvent *event
+#else
+                  CalEvent *event
+#endif
+                  ) {
 
     if(_events){
         if(event){
@@ -911,7 +1288,13 @@ void ob_add_event(PA_CollectionRef _events, CalEvent *event) {
     }
 }
 
-void ob_set_event(PA_ObjectRef status, CalEvent *event) {
+void ob_set_event(PA_ObjectRef status,
+#if USE_EK_CALENDAR_ITEM
+                  EKEvent *event
+#else
+                  CalEvent *event
+#endif
+                  ) {
     
     if(status){
         if(event){
@@ -930,7 +1313,13 @@ void iCal_Create_event(PA_PluginParameters params) {
     PA_ObjectRef status = PA_CreateObject();
     
     if(check_permission(status)) {
+        
+#if USE_EK_CALENDAR_ITEM
+        EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+#else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
+#endif
+        
         if(defaultCalendarStore) {
             PA_ObjectRef options = PA_GetObjectParameter(params, 1);
             if(options){
@@ -938,18 +1327,34 @@ void iCal_Create_event(PA_PluginParameters params) {
                 PA_ObjectRef c = ob_get_o(options, L"calendar");
                 
                 if(c){
-                    CalCalendar *calendar = ob_get_calendar(c, defaultCalendarStore);
+                    
+#if USE_EK_CALENDAR_ITEM
+                        EKCalendar  *calendar = ob_get_calendar(c, defaultCalendarStore);
+#else
+                        CalCalendar *calendar = ob_get_calendar(c, defaultCalendarStore);
+#endif
+                                        
                     if(calendar){
                         
+#if USE_EK_CALENDAR_ITEM
+                        EKEvent  *event = [EKEvent eventWithEventStore:defaultCalendarStore];
+#else
                         CalEvent *event = [CalEvent event];
-                        
+#endif
+
                         event.calendar = calendar;
                         
                         ob_set_event_prop(status, options, event);
                         
                         NSError *error = nil;
-                        if([defaultCalendarStore saveEvent:event span:CalSpanThisEvent error:&error]){
-                            
+                        
+#if USE_EK_CALENDAR_ITEM
+                        if([defaultCalendarStore saveEvent:event span:EKSpanThisEvent commit:YES error:&error])
+#else
+                        if([defaultCalendarStore saveEvent:event span:CalSpanThisEvent error:&error])
+#endif
+                        {
+                        
                             ob_set_b(status, L"success", true);
                             ob_set_event(status, event);
                             
@@ -968,6 +1373,9 @@ void iCal_Create_event(PA_PluginParameters params) {
                 ob_set_b(status, L"success", false);
                 ob_set_s(status, L"errorMessage", "option is missing");
             }
+#if USE_EK_CALENDAR_ITEM
+            [defaultCalendarStore release];
+#endif
         }
     }
     PA_ReturnObject(params, status);
@@ -978,19 +1386,35 @@ void iCal_Set_event_property(PA_PluginParameters params) {
     PA_ObjectRef status = PA_CreateObject();
     
     if(check_permission(status)) {
+        
+#if USE_EK_CALENDAR_ITEM
+        EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+#else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
+#endif
+        
         if(defaultCalendarStore) {
             PA_ObjectRef options = PA_GetObjectParameter(params, 1);
             if(options){
     
+#if USE_EK_CALENDAR_ITEM
+                EKEvent  *event = ob_get_event(options, defaultCalendarStore);
+#else
                 CalEvent *event = ob_get_event(options, defaultCalendarStore);
-                
+#endif
+                                
                 if(event){
                     
                     PA_ObjectRef c = ob_get_o(options, L"calendar");
                     
                     if(c){
+                        
+#if USE_EK_CALENDAR_ITEM
+                        EKCalendar  *calendar = ob_get_calendar(c, defaultCalendarStore);
+#else
                         CalCalendar *calendar = ob_get_calendar(c, defaultCalendarStore);
+#endif
+                        
                         if(calendar){
                             event.calendar = calendar;
                         }
@@ -999,7 +1423,13 @@ void iCal_Set_event_property(PA_PluginParameters params) {
                     ob_set_event_prop(status, options, event);
 
                     NSError *error = nil;
-                    if([defaultCalendarStore saveEvent:event span:CalSpanThisEvent error:&error]){
+ 
+#if USE_EK_CALENDAR_ITEM
+                    if([defaultCalendarStore saveEvent:event span:EKSpanThisEvent commit:YES error:&error])
+#else
+                    if([defaultCalendarStore saveEvent:event span:CalSpanThisEvent error:&error])
+#endif
+                    {
                         
                         ob_set_b(status, L"success", true);
                         ob_set_event(status, event);
@@ -1016,6 +1446,10 @@ void iCal_Set_event_property(PA_PluginParameters params) {
                 ob_set_b(status, L"success", false);
                 ob_set_s(status, L"errorMessage", "option is missing");
             }
+            
+#if USE_EK_CALENDAR_ITEM
+            [defaultCalendarStore release];
+#endif
         }
     }
     PA_ReturnObject(params, status);
@@ -1026,13 +1460,23 @@ void iCal_Get_event_property(PA_PluginParameters params) {
     PA_ObjectRef status = PA_CreateObject();
     
     if(check_permission(status)) {
+        
+#if USE_EK_CALENDAR_ITEM
+        EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+#else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
+#endif
+        
         if(defaultCalendarStore) {
             PA_ObjectRef options = PA_GetObjectParameter(params, 1);
             if(options){
-    
+
+#if USE_EK_CALENDAR_ITEM
+                EKEvent  *event = ob_get_event(options, defaultCalendarStore);
+#else
                 CalEvent *event = ob_get_event(options, defaultCalendarStore);
-                
+#endif
+
                 if(event){
                     
                     ob_set_b(status, L"success", true);
@@ -1047,6 +1491,9 @@ void iCal_Get_event_property(PA_PluginParameters params) {
                 ob_set_b(status, L"success", false);
                 ob_set_s(status, L"errorMessage", "option is missing");
             }
+#if USE_EK_CALENDAR_ITEM
+            [defaultCalendarStore release];
+#endif
         }
     }
     PA_ReturnObject(params, status);
@@ -1057,17 +1504,34 @@ void iCal_Remove_event(PA_PluginParameters params) {
     PA_ObjectRef status = PA_CreateObject();
     
     if(check_permission(status)) {
+        
+#if USE_EK_CALENDAR_ITEM
+        EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+#else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
+#endif
+        
         if(defaultCalendarStore) {
             PA_ObjectRef options = PA_GetObjectParameter(params, 1);
             if(options){
-    
+        
+#if USE_EK_CALENDAR_ITEM
+                EKEvent  *event = ob_get_event(options, defaultCalendarStore);
+#else
                 CalEvent *event = ob_get_event(options, defaultCalendarStore);
-                
+#endif
+    
                 if(event){
                     
                     NSError *error = nil;
-                    if([defaultCalendarStore removeEvent:event span:CalSpanAllEvents error:&error]){
+                    
+#if USE_EK_CALENDAR_ITEM
+                    if([defaultCalendarStore removeEvent:event span:EKSpanThisEvent commit:YES error:&error])
+#else
+                    if([defaultCalendarStore removeEvent:event span:CalSpanAllEvents error:&error])
+#endif
+                    {
+        
                         ob_set_b(status, L"success", true);
                     }else{
                         ob_set_error(status, error);
@@ -1081,6 +1545,10 @@ void iCal_Remove_event(PA_PluginParameters params) {
                 ob_set_b(status, L"success", false);
                 ob_set_s(status, L"errorMessage", "option is missing");
             }
+            
+#if USE_EK_CALENDAR_ITEM
+            [defaultCalendarStore release];
+#endif
         }
     }
     PA_ReturnObject(params, status);
@@ -1093,56 +1561,109 @@ void iCal_Create_calendar(PA_PluginParameters params) {
     PA_ObjectRef status = PA_CreateObject();
     
     if(check_permission(status)) {
+        
+#if USE_EK_CALENDAR_ITEM
+        EKEventStore     *defaultCalendarStore = [[EKEventStore alloc]init];
+#else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
+#endif
+        
         if(defaultCalendarStore) {
             PA_ObjectRef options = PA_GetObjectParameter(params, 1);
             if(options){
-                
+#if USE_EK_CALENDAR_ITEM
+                EKCalendar  *calendar = [EKCalendar calendarForEntityType:EKEntityTypeEvent eventStore:defaultCalendarStore];
+#else
                 CalCalendar *calendar = [CalCalendar calendar];
-                
-                NSString *title = ob_get_v(options, L"title");
-                
-                if(title){
-                    calendar.title = title;
-                    [title release];
-                }
-
-                NSString *notes = ob_get_v(options, L"notes");
-                
-                if(notes){
-                    calendar.notes = notes;
-                    [notes release];
-                }
-                
-                if(ob_is_defined(options, L"color")){
-                    calendar.color = getRGBcolor(ob_get_n(options, L"color"));
-                }
-                
-                NSError *error = nil;
-                
-                if([defaultCalendarStore saveCalendar:calendar error:&error]) {
+#endif
+                if(calendar) {
                     
-                    ob_set_b(status, L"success", true);
+                    NSString *title = ob_get_v(options, L"title");
                     
-                    PA_ObjectRef _calendar = PA_CreateObject();
+                    if(title){
+                        calendar.title = title;
+                        [title release];
+                    }
 
-                    ob_set_v(_calendar, L"title", calendar.title);
-                    ob_set_v(_calendar, L"uid", calendar.uid);
-                    ob_set_v(_calendar, L"notes", calendar.notes);
-                    ob_set_v(_calendar, L"type", calendar.type);
+#if USE_EK_CALENDAR_ITEM
+
+                    NSArray<EKSource *> *sources = [defaultCalendarStore sources];
+                    NSString *source = ob_get_v(options, L"source");
                     
-                    ob_set_b(_calendar, L"isEditable", calendar.isEditable);
-                    ob_set_n(_calendar, L"color", calendar.color ? getColorRGB(calendar.color) : 0L);
+                    if(source) {
+                        
+                        if(!calendar.source) {
+                            calendar.source = [defaultCalendarStore sourceWithIdentifier:source];
+                        }
+                        
+                        if(!calendar.source) {
+                            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%K == %@ or %K LIKE %@",
+                                                      @"typeString", source, @"title", source
+                                                      ];
+                            NSArray *_sources = [sources filteredArrayUsingPredicate:predicate];
+                            if([_sources count]){
+                                calendar.source = [_sources objectAtIndex:0];
+                            }
+                        }
 
-                    ob_set_o(status, L"calendar", _calendar);
+                        [source release];
+                    }
+                    
+                    if(!calendar.source) {
+                        calendar.source = [defaultCalendarStore sourceWithIdentifier:@"Local"];
+                    }
+                    
+                    if(!calendar.source) {
+                        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"%K == %@",
+                                                  @"sourceType", [NSNumber numberWithInt:EKSourceTypeLocal]];
+                        NSArray *_sources = [sources filteredArrayUsingPredicate:predicate];
+                        if([_sources count]){
+                            calendar.source = [_sources objectAtIndex:0];
+                        }
+                    }
+                      
+#else
+                    NSString *notes = ob_get_v(options, L"notes");
+                    
+                    if(notes){
+                        calendar.notes = notes;
+                        [notes release];
+                    }
+#endif
 
-                }else{
-                    ob_set_error(status, error);
+                    if(ob_is_defined(options, L"color")){
+                        calendar.color = getRGBcolor(ob_get_n(options, L"color"));
+                    }
+ 
+                    NSError *error = nil;
+                    
+#if USE_EK_CALENDAR_ITEM
+                    if([defaultCalendarStore saveCalendar:calendar commit:YES error:&error])
+#else
+                    if([defaultCalendarStore saveCalendar:calendar error:&error])
+#endif
+                    {
+                        ob_set_b(status, L"success", true);
+                        
+                        PA_ObjectRef _calendar = PA_CreateObject();
+                        
+                        ob_set_calendar(_calendar, calendar);
+
+                        ob_set_o(status, L"calendar", _calendar);
+                        
+                    }else{
+                        ob_set_error(status, error);
+                    }
+  
                 }
+     
             }else{
                 ob_set_b(status, L"success", false);
                 ob_set_s(status, L"errorMessage", "option is missing");
             }
+#if USE_EK_CALENDAR_ITEM
+            [defaultCalendarStore release];
+#endif
         }
     }
     
@@ -1154,11 +1675,22 @@ void iCal_Set_calendar_property(PA_PluginParameters params) {
     PA_ObjectRef status = PA_CreateObject();
     
     if(check_permission(status)) {
+        
+#if USE_EK_CALENDAR_ITEM
+        EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+#else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
+#endif
+        
         if(defaultCalendarStore) {
             PA_ObjectRef options = PA_GetObjectParameter(params, 1);
             if(options){
+#if USE_EK_CALENDAR_ITEM
+                EKCalendar  *calendar = ob_get_calendar(options, defaultCalendarStore);
+#else
                 CalCalendar *calendar = ob_get_calendar(options, defaultCalendarStore);
+#endif
+
                 if(calendar){
                     
                     NSString *title = ob_get_v(options, L"title");
@@ -1167,33 +1699,35 @@ void iCal_Set_calendar_property(PA_PluginParameters params) {
                         calendar.title = title;
                         [title release];
                     }
-                    
+
+#if USE_EK_CALENDAR_ITEM
+#else
                     NSString *notes = ob_get_v(options, L"notes");
                     
                     if(notes){
                         calendar.notes = notes;
                         [notes release];
                     }
-                    
+#endif
+      
                     if(ob_is_defined(options, L"color")){
                         calendar.color = getRGBcolor(ob_get_n(options, L"color"));
                     }
                     
                     NSError *error = nil;
                     
-                    if([defaultCalendarStore saveCalendar:calendar error:&error]) {
-                        
+#if USE_EK_CALENDAR_ITEM
+                    if([defaultCalendarStore saveCalendar:calendar commit:YES error:&error])
+#else
+                    if([defaultCalendarStore saveCalendar:calendar error:&error])
+#endif
+                    {
+   
                         ob_set_b(status, L"success", true);
                         
                         PA_ObjectRef _calendar = PA_CreateObject();
-                        
-                        ob_set_v(_calendar, L"title", calendar.title);
-                        ob_set_v(_calendar, L"uid", calendar.uid);
-                        ob_set_v(_calendar, L"notes", calendar.notes);
-                        ob_set_v(_calendar, L"type", calendar.type);
-                        
-                        ob_set_b(_calendar, L"isEditable", calendar.isEditable);
-                        ob_set_n(_calendar, L"color", calendar.color ? getColorRGB(calendar.color) : 0L);
+  
+                        ob_set_calendar(_calendar, calendar);
                         
                         ob_set_o(status, L"calendar", _calendar);
                         
@@ -1208,6 +1742,9 @@ void iCal_Set_calendar_property(PA_PluginParameters params) {
                 ob_set_b(status, L"success", false);
                 ob_set_s(status, L"errorMessage", "option is missing");
             }
+#if USE_EK_CALENDAR_ITEM
+            [defaultCalendarStore release];
+#endif
         }
     }
     
@@ -1219,23 +1756,29 @@ void iCal_Get_calendar_property(PA_PluginParameters params) {
     PA_ObjectRef status = PA_CreateObject();
     
     if(check_permission(status)) {
+        
+#if USE_EK_CALENDAR_ITEM
+        EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+#else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
+#endif
+        
         if(defaultCalendarStore) {
             PA_ObjectRef options = PA_GetObjectParameter(params, 1);
             if(options){
+                
+#if USE_EK_CALENDAR_ITEM
+                EKCalendar *calendar = ob_get_calendar(options, defaultCalendarStore);
+#else
                 CalCalendar *calendar = ob_get_calendar(options, defaultCalendarStore);
+#endif
+                
                 if(calendar){
                     
                     PA_ObjectRef _calendar = PA_CreateObject();
-
-                    ob_set_v(_calendar, L"title", calendar.title);
-                    ob_set_v(_calendar, L"uid", calendar.uid);
-                    ob_set_v(_calendar, L"notes", calendar.notes);
-                    ob_set_v(_calendar, L"type", calendar.type);
+ 
+                    ob_set_calendar(_calendar, calendar);
                     
-                    ob_set_b(_calendar, L"isEditable", calendar.isEditable);
-                    ob_set_n(_calendar, L"color", calendar.color ? getColorRGB(calendar.color) : 0L);
-
                     ob_set_o(status, L"calendar", _calendar);
                 }else{
                     ob_set_b(status, L"success", false);
@@ -1245,25 +1788,47 @@ void iCal_Get_calendar_property(PA_PluginParameters params) {
                 ob_set_b(status, L"success", false);
                 ob_set_s(status, L"errorMessage", "option is missing");
             }
+            
+#if USE_EK_CALENDAR_ITEM
+            [defaultCalendarStore release];
+#endif
         }
     }
     
     PA_ReturnObject(params, status);
 }
-
+    
 void iCal_Remove_calendar(PA_PluginParameters params) {
     
     PA_ObjectRef status = PA_CreateObject();
     
     if(check_permission(status)) {
+
+#if USE_EK_CALENDAR_ITEM
+        EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+#else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
+#endif
+        
         if(defaultCalendarStore) {
             PA_ObjectRef options = PA_GetObjectParameter(params, 1);
             if(options){
-                CalCalendar *calendar = ob_get_calendar(options, defaultCalendarStore);
+                
+#if USE_EK_CALENDAR_ITEM
+                        EKCalendar *calendar = ob_get_calendar(options, defaultCalendarStore);
+#else
+                        CalCalendar *calendar = ob_get_calendar(options, defaultCalendarStore);
+#endif
+                
                 if(calendar){
                     NSError *error = nil;
-                    if([defaultCalendarStore removeCalendar:calendar error:&error]){
+    
+#if USE_EK_CALENDAR_ITEM
+                    if([defaultCalendarStore removeCalendar:calendar commit:YES error:&error])
+#else
+                    if([defaultCalendarStore removeCalendar:calendar error:&error])
+#endif
+                    {
                         ob_set_b(status, L"success", true);
                     }else{
                         ob_set_error(status, error);
@@ -1276,20 +1841,27 @@ void iCal_Remove_calendar(PA_PluginParameters params) {
                 ob_set_b(status, L"success", false);
                 ob_set_s(status, L"errorMessage", "option is missing");
             }
+#if USE_EK_CALENDAR_ITEM
+            [defaultCalendarStore release];
+#endif
         }
+        
     }
-    
     PA_ReturnObject(params, status);
 }
-
-#pragma mark Calendar Store
 
 void iCal_QUERY_EVENT(PA_PluginParameters params) {
     
     PA_ObjectRef status = PA_CreateObject();
     
     if(check_permission(status)) {
+        
+#if USE_EK_CALENDAR_ITEM
+        EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+#else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
+#endif
+                
         if(defaultCalendarStore) {
             
             PA_CollectionRef _events = PA_CreateCollection();
@@ -1302,43 +1874,60 @@ void iCal_QUERY_EVENT(PA_PluginParameters params) {
                 
                 if(startDate){
                     if(endDate){
-                        NSArray *calendars = ob_get_calendars(options, defaultCalendarStore);
                         
+                        NSArray *calendars = ob_get_calendars(options, defaultCalendarStore);
+    
+#if USE_EK_CALENDAR_ITEM
+                        NSPredicate *predicate = [defaultCalendarStore predicateForEventsWithStartDate:startDate
+                                                                                               endDate:endDate
+                                                                                             calendars:[calendars count] ? calendars : nil];
+#else
                         if(calendars){
+                            
                             
                             NSPredicate *predicate = [CalCalendarStore eventPredicateWithStartDate:startDate
                                                                                            endDate:endDate
                                                                                          calendars:calendars];
-                            if(predicate){
-                                NSArray *events = [defaultCalendarStore eventsWithPredicate:predicate];
-                                
-                                time_t startTime = time(0);
-                                
-                                for(unsigned int i = 0; i < [events count]; ++i) {
-                                    
-                                    time_t now = time(0);
-                                    time_t elapsedTime = abs(startTime - now);
-                                    if(elapsedTime > 0)
-                                    {
-                                        startTime = now;
-                                        PA_YieldAbsolute();
-                                    }
-                                    if([[events objectAtIndex:i]isMemberOfClass:[CalEvent class]]) {
-                                        
-                                        CalEvent *event = [events objectAtIndex:i];
-                                        ob_add_event(_events, event);
-                        
-                                    }
-                                }
-                                ob_set_c(status, L"events", _events);
-                            }else{
-                                ob_set_b(status, L"success", false);
-                                ob_set_s(status, L"errorMessage", "invalid predicate");
-                            }
                         }else{
                             ob_set_b(status, L"success", false);
                             ob_set_s(status, L"errorMessage", "invalid calendars");
                         }
+#endif
+                        if(predicate){
+                            
+#if USE_EK_CALENDAR_ITEM
+                            NSArray *events = [defaultCalendarStore eventsMatchingPredicate:predicate];
+#else
+                            NSArray *events = [defaultCalendarStore eventsWithPredicate:predicate];
+#endif
+                            
+                            time_t startTime = time(0);
+                            
+                            for(unsigned int i = 0; i < [events count]; ++i) {
+                                
+                                time_t now = time(0);
+                                time_t elapsedTime = abs(startTime - now);
+                                if(elapsedTime > 0)
+                                {
+                                    startTime = now;
+                                    PA_YieldAbsolute();
+                                }
+                                if([[events objectAtIndex:i]isMemberOfClass:[CalEvent class]]) {
+#if USE_EK_CALENDAR_ITEM
+                                    EKEvent *event = [events objectAtIndex:i];
+#else
+                                    CalEvent *event = [events objectAtIndex:i];
+#endif
+                                    ob_add_event(_events, event);
+                                    
+                                }
+                            }
+                            ob_set_c(status, L"events", _events);
+                        }else{
+                            ob_set_b(status, L"success", false);
+                            ob_set_s(status, L"errorMessage", "invalid predicate");
+                        }
+                        
                     }else{
                         ob_set_b(status, L"success", false);
                         ob_set_s(status, L"errorMessage", "invalid endDate");
@@ -1348,53 +1937,143 @@ void iCal_QUERY_EVENT(PA_PluginParameters params) {
                     ob_set_s(status, L"errorMessage", "invalid startDate");
                 }
             }
+            
+#if USE_EK_CALENDAR_ITEM
+            [defaultCalendarStore release];
+#endif
         }
     }
     PA_ReturnObject(params, status);
 }
-
+        
 void iCal_GET_CALENDAR_LIST(PA_PluginParameters params) {
     
     PA_ObjectRef status = PA_CreateObject();
     
     if(check_permission(status)) {
+        
+#if USE_EK_CALENDAR_ITEM
+        EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+#else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
+#endif
+        
         if(defaultCalendarStore) {
             
             PA_CollectionRef _calendars = PA_CreateCollection();
             
+#if USE_EK_CALENDAR_ITEM
+            NSArray *calendars = [defaultCalendarStore calendarsForEntityType:EKEntityTypeEvent];
+#else
             NSArray *calendars = [defaultCalendarStore calendars];
+#endif
+
             for(unsigned int i = 0; i < [calendars count]; ++i) {
 
                 if([[calendars objectAtIndex:i]isMemberOfClass:[CalCalendar class]]) {
-                    
+      
+#if USE_EK_CALENDAR_ITEM
+                    EKCalendar *calendar = [calendars objectAtIndex:i];
+#else
                     CalCalendar *calendar = [calendars objectAtIndex:i];
-
+#endif
+                    
                     PA_ObjectRef _calendar = PA_CreateObject();
 
-                    ob_set_v(_calendar, L"title", calendar.title);
-                    ob_set_v(_calendar, L"uid", calendar.uid);
-                    ob_set_v(_calendar, L"notes", calendar.notes);
-                    ob_set_v(_calendar, L"type", calendar.type);
-
-                    ob_set_b(_calendar, L"isEditable", calendar.isEditable);
-                    ob_set_n(_calendar, L"color", calendar.color ? getColorRGB(calendar.color) : 0L);
-
+                    ob_set_calendar(_calendar, calendar);
+                    
                     PA_Variable v = PA_CreateVariable(eVK_Object);
                     PA_SetObjectVariable(&v, _calendar);
                     PA_SetCollectionElement(_calendars, PA_GetCollectionLength(_calendars), v);
                     PA_ClearVariable(&v);
- 
                 }
                 
-            }//[calendars count]
+            }
             
             ob_set_c(status, L"calendars", _calendars);
-            
-        }//defaultCalendarStore
+         
+#if USE_EK_CALENDAR_ITEM
+            [defaultCalendarStore release];
+#endif
+        }
     }
     
     PA_ReturnObject(params, status);
 }
+    
+void iCal_Get_default_calendar(PA_PluginParameters params) {
+    
+    PA_ObjectRef status = PA_CreateObject();
+    
+#if USE_EK_CALENDAR_ITEM
+    
+    if(check_permission(status)) {
+        EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+        
+        if(defaultCalendarStore) {
+            
+            EKCalendar *calendar = defaultCalendarStore.defaultCalendarForNewEvents;
 
+            if(calendar) {
+                
+                ob_set_b(status, L"success", true);
+                
+                PA_ObjectRef _calendar = PA_CreateObject();
+                
+                ob_set_calendar(_calendar, calendar);
+                                
+                ob_set_o(status, L"calendar", _calendar);
+                
+                NSArray<EKSource *> *sources = [defaultCalendarStore sources];
+                
+                PA_CollectionRef _sources = PA_CreateCollection();
+                
+                for(NSUInteger i = 0; i < [sources count]; ++i) {
+                    
+                    EKSource *source = [sources objectAtIndex:i];
+                    
+                    PA_ObjectRef s = PA_CreateObject();
+
+                    ob_set_v(s, L"uid", source.sourceIdentifier);
+                    ob_set_v(s, L"title", source.title);
+                    
+                    switch (source.sourceType) {
+                        case EKSourceTypeLocal:
+                            ob_set_v(s, L"type", @"Local");
+                            break;
+                        case EKSourceTypeCalDAV:
+                            ob_set_v(s, L"type", @"CalDAV");
+                            break;
+                        case EKSourceTypeExchange:
+                            ob_set_v(s, L"type", @"Exchange");
+                            break;
+                        case EKSourceTypeSubscribed:
+                            ob_set_v(s, L"type", @"Subscription");
+                            break;
+                        case EKSourceTypeBirthdays:
+                            ob_set_v(s, L"type", @"Birthday");
+                            break;
+                        case EKSourceTypeMobileMe:
+                            ob_set_v(s, L"type", @"MobileMe");
+                            break;
+                    }
+                    
+                    PA_Variable v = PA_CreateVariable(eVK_Object);
+                    PA_SetObjectVariable(&v, s);
+                    PA_SetCollectionElement(_sources, PA_GetCollectionLength(_sources), v);
+                    PA_ClearVariable(&v);
+  
+                }
+ 
+                ob_set_c(status, L"sources", _sources);
+            }
+            [defaultCalendarStore release];
+        }
+        
+    }
+#endif
+    
+    PA_ReturnObject(params, status);
+}
+    
 #pragma GCC diagnostic pop

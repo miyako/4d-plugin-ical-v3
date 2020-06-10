@@ -45,11 +45,15 @@ void iCal_Set_calendar_property(PA_PluginParameters params);
 void iCal_Get_calendar_property(PA_PluginParameters params);
 void iCal_Remove_calendar(PA_PluginParameters params);
 
+void iCal_Get_default_calendar(PA_PluginParameters params);
+
 // --- Event
 void iCal_Create_event(PA_PluginParameters params);
 void iCal_Set_event_property(PA_PluginParameters params);
 void iCal_Get_event_property(PA_PluginParameters params);
 void iCal_Remove_event(PA_PluginParameters params);
+
+#define USE_EK_CALENDAR_ITEM 1
 
 //TODO: return in event (read only) alarms, attendees, recurrenceRule
 
