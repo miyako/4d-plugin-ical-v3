@@ -12,5 +12,12 @@
 			"type": 1,
 			"methodName": "TEST_get_prop"
 		}
+	},
+	{
+		"line": 6,
+		"method": {
+			"type": 1,
+			"methodName": "TEST_005_event"
+		}
 	}
 ]

@@ -279,12 +279,12 @@
 		"stamp": "2020-06-06T02:49:51.661Z"
 	},
 	"Sources/Methods/TEST_005_event.4dm": {
-		"startSelection": 69,
-		"endSelection": 69,
-		"firstSelectedLine": 27,
-		"lastSelectedLine": 27,
+		"startSelection": 0,
+		"endSelection": 0,
+		"firstSelectedLine": 1,
+		"lastSelectedLine": 1,
 		"folding": [],
 		"bookmarks": [],
-		"stamp": "2020-06-06T05:18:55.378Z"
+		"stamp": "2020-06-10T21:53:44.752Z"
 	}
 }

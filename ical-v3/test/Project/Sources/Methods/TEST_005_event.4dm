@@ -3,6 +3,8 @@ $status:=iCal Request permisson
 
 If ($status.success)
 	
+	$status:=iCal GET CALENDAR LIST 
+	
 	$status:=iCal Get default calendar 
 	
 	If ($status.success)

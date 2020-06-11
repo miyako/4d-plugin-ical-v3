@@ -1314,6 +1314,8 @@ void iCal_Create_event(PA_PluginParameters params) {
     
     if(check_permission(status)) {
         
+        EKSpan span = EKSpanFutureEvents;
+        
 #if USE_EK_CALENDAR_ITEM
         EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
 #else
@@ -1323,6 +1325,18 @@ void iCal_Create_event(PA_PluginParameters params) {
         if(defaultCalendarStore) {
             PA_ObjectRef options = PA_GetObjectParameter(params, 1);
             if(options){
+                
+                if(ob_is_defined(options, L"span")) {
+                    CUTF8String _span;
+                    if(ob_get_s(options, L"span", &_span)) {
+                        if(_span == (const uint8_t *)"future") {
+                            span = EKSpanFutureEvents;
+                        }
+                        if(_span == (const uint8_t *)"this") {
+                            span = EKSpanThisEvent;
+                        }
+                    }
+                }
                 
                 PA_ObjectRef c = ob_get_o(options, L"calendar");
                 
@@ -1349,7 +1363,7 @@ void iCal_Create_event(PA_PluginParameters params) {
                         NSError *error = nil;
                         
 #if USE_EK_CALENDAR_ITEM
-                        if([defaultCalendarStore saveEvent:event span:EKSpanThisEvent commit:YES error:&error])
+                        if([defaultCalendarStore saveEvent:event span:span  commit:YES error:&error])
 #else
                         if([defaultCalendarStore saveEvent:event span:CalSpanThisEvent error:&error])
 #endif
@@ -1387,6 +1401,8 @@ void iCal_Set_event_property(PA_PluginParameters params) {
     
     if(check_permission(status)) {
         
+        EKSpan span = EKSpanFutureEvents;
+        
 #if USE_EK_CALENDAR_ITEM
         EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
 #else
@@ -1396,7 +1412,19 @@ void iCal_Set_event_property(PA_PluginParameters params) {
         if(defaultCalendarStore) {
             PA_ObjectRef options = PA_GetObjectParameter(params, 1);
             if(options){
-    
+
+                if(ob_is_defined(options, L"span")) {
+                    CUTF8String _span;
+                    if(ob_get_s(options, L"span", &_span)) {
+                        if(_span == (const uint8_t *)"future") {
+                            span = EKSpanFutureEvents;
+                        }
+                        if(_span == (const uint8_t *)"this") {
+                            span = EKSpanThisEvent;
+                        }
+                    }
+                }
+                
 #if USE_EK_CALENDAR_ITEM
                 EKEvent  *event = ob_get_event(options, defaultCalendarStore);
 #else
@@ -1425,9 +1453,9 @@ void iCal_Set_event_property(PA_PluginParameters params) {
                     NSError *error = nil;
  
 #if USE_EK_CALENDAR_ITEM
-                    if([defaultCalendarStore saveEvent:event span:EKSpanThisEvent commit:YES error:&error])
+                    if([defaultCalendarStore saveEvent:event span:span     commit:YES error:&error])
 #else
-                    if([defaultCalendarStore saveEvent:event span:CalSpanThisEvent error:&error])
+                    if([defaultCalendarStore saveEvent:event span:CalSpanFutureEvents error:&error])
 #endif
                     {
                         
@@ -1505,6 +1533,8 @@ void iCal_Remove_event(PA_PluginParameters params) {
     
     if(check_permission(status)) {
         
+        EKSpan span = EKSpanFutureEvents;
+        
 #if USE_EK_CALENDAR_ITEM
         EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
 #else
@@ -1517,6 +1547,18 @@ void iCal_Remove_event(PA_PluginParameters params) {
         
 #if USE_EK_CALENDAR_ITEM
                 EKEvent  *event = ob_get_event(options, defaultCalendarStore);
+                
+                if(ob_is_defined(options, L"span")) {
+                    CUTF8String _span;
+                    if(ob_get_s(options, L"span", &_span)) {
+                        if(_span == (const uint8_t *)"future") {
+                            span = EKSpanFutureEvents;
+                        }
+                        if(_span == (const uint8_t *)"this") {
+                            span = EKSpanThisEvent;
+                        }
+                    }
+                }
 #else
                 CalEvent *event = ob_get_event(options, defaultCalendarStore);
 #endif
@@ -1526,7 +1568,7 @@ void iCal_Remove_event(PA_PluginParameters params) {
                     NSError *error = nil;
                     
 #if USE_EK_CALENDAR_ITEM
-                    if([defaultCalendarStore removeEvent:event span:EKSpanThisEvent commit:YES error:&error])
+                    if([defaultCalendarStore removeEvent:event span:span  commit:YES error:&error])
 #else
                     if([defaultCalendarStore removeEvent:event span:CalSpanAllEvents error:&error])
 #endif
@@ -1970,8 +2012,13 @@ void iCal_GET_CALENDAR_LIST(PA_PluginParameters params) {
 
             for(unsigned int i = 0; i < [calendars count]; ++i) {
 
-                if([[calendars objectAtIndex:i]isMemberOfClass:[CalCalendar class]]) {
-      
+#if USE_EK_CALENDAR_ITEM
+                if([[calendars objectAtIndex:i]isMemberOfClass:[EKCalendar class]])
+ #else
+                if([[calendars objectAtIndex:i]isMemberOfClass:[CalCalendar class]])
+#endif
+                {
+                    
 #if USE_EK_CALENDAR_ITEM
                     EKCalendar *calendar = [calendars objectAtIndex:i];
 #else
