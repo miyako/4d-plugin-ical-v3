@@ -199,9 +199,9 @@
 	},
 	"Sources/Methods/TEST_002_calendar_Exchange.4dm": {
 		"left": 516,
-		"top": 279,
+		"top": 305,
 		"width": 1101,
-		"height": 806
+		"height": 731
 	},
 	"Sources/Methods/TEST_003_calendar_iCloud.4dm": {
 		"left": 313,
@@ -216,9 +216,9 @@
 		"height": 806
 	},
 	"Sources/Methods/TEST_005_event.4dm": {
-		"left": 426,
-		"top": 221,
+		"left": 105,
+		"top": 130,
 		"width": 1101,
-		"height": 806
+		"height": 731
 	}
 }

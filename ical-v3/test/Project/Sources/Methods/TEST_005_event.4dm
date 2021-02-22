@@ -5,6 +5,14 @@ If ($status.success)
 	
 	$status:=iCal GET CALENDAR LIST 
 	
+	If ($status.success)
+		$calendars:=$status.calendars
+		$calendars:=$calendars.query("title == :1";"販売")
+		
+		
+	End if 
+	
+	
 	$status:=iCal Get default calendar 
 	
 	If ($status.success)

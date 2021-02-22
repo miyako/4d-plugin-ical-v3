@@ -252,10 +252,10 @@
 		"stamp": "2020-06-06T02:40:36.425Z"
 	},
 	"Sources/Methods/TEST_002_calendar_Exchange.4dm": {
-		"startSelection": 7,
-		"endSelection": 7,
-		"firstSelectedLine": 23,
-		"lastSelectedLine": 23,
+		"startSelection": 0,
+		"endSelection": 0,
+		"firstSelectedLine": 12,
+		"lastSelectedLine": 12,
 		"folding": [],
 		"bookmarks": [],
 		"stamp": "2020-06-06T02:49:20.229Z"
@@ -279,12 +279,12 @@
 		"stamp": "2020-06-06T02:49:51.661Z"
 	},
 	"Sources/Methods/TEST_005_event.4dm": {
-		"startSelection": 0,
+		"startSelection": 36,
 		"endSelection": 0,
-		"firstSelectedLine": 1,
-		"lastSelectedLine": 1,
+		"firstSelectedLine": 33,
+		"lastSelectedLine": 33,
 		"folding": [],
 		"bookmarks": [],
-		"stamp": "2020-06-10T21:53:44.752Z"
+		"stamp": "2020-06-12T03:19:05.891Z"
 	}
 }
