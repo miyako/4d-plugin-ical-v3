@@ -8,7 +8,7 @@
 		<dict>
 			<key>hash</key>
 			<data>
-			VgdBsNz67jhiD6IJamBhxsm8NfE=
+			bkl8F3cXuqRaLcw4FO8n1kQk91o=
 			</data>
 			<key>optional</key>
 			<true/>
@@ -26,10 +26,6 @@
 	<dict>
 		<key>QuickLook/Thumbnail.png</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			hC+U8EqvyIRM1lLakHLfvl4V9Tc=
-			</data>
 			<key>hash2</key>
 			<data>
 			nGfrvibB5KlzvZgF4Bra+l0HpRloxismgTLePnOwCdk=
@@ -37,23 +33,15 @@
 		</dict>
 		<key>Resources/English.lproj/InfoPlist.strings</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			VgdBsNz67jhiD6IJamBhxsm8NfE=
-			</data>
 			<key>hash2</key>
 			<data>
-			VNrUU6Ca68FM9AbT+0L5cIT9yN/k3+tVhvRg2HrEQwA=
+			8CkKYF94kyPGveTQDTws/ZagUDQP1UGflkHaSB4/xNg=
 			</data>
 			<key>optional</key>
 			<true/>
 		</dict>
 		<key>Resources/constants.xlf</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			p3vX1P/ZjH//+bLV9rxfZC466uw=
-			</data>
 			<key>hash2</key>
 			<data>
 			ww/EjdI4A5Hky0F5zVmaaHIRyRN3Ea5xJAUJQgHkg3g=
@@ -61,32 +49,13 @@
 		</dict>
 		<key>Resources/manifest.json</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			Pc+Gn6RbdAq7YJzngWe43CwAHwU=
-			</data>
 			<key>hash2</key>
 			<data>
 			2zrcIyPtT2bHT+9M2/BePiMwOGHOiCQVLX7HSMuMeCI=
 			</data>
 		</dict>
-		<key>Windows/iCal.4DX</key>
-		<dict>
-			<key>hash</key>
-			<data>
-			hL9gqzB1pAgChKZ1uj+Jqt43yxs=
-			</data>
-			<key>hash2</key>
-			<data>
-			ZCCEqtPmUM+2iJDxTvuZrd5mchV7dH5Z4RZvNF7YQT0=
-			</data>
-		</dict>
 		<key>Windows64/iCal.4DX</key>
 		<dict>
-			<key>hash</key>
-			<data>
-			zvoZ7ULt+O/aKx6NzgaqTillGNg=
-			</data>
 			<key>hash2</key>
 			<data>
 			xZ0isPdvytfz/ISMhvmTet0RKxwRCg6HeDepN7N2icI=
