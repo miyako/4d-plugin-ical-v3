@@ -8,7 +8,7 @@
 # 4d-plugin-ical-v3
 Updated version of iCal API
 
-https://miyako.github.io/2020/03/17/4d-plugin-ical-v3.html
+[miyako.github.io](https://miyako.github.io/2020/03/17/4d-plugin-ical-v3.html)
 
 ### Remarks
 
