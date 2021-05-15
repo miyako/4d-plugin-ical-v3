@@ -5,6 +5,8 @@
 
 **Note**: for v17 and earlier, move `manifest.json` to `Contents`
 
+See [4d-utility-sign-app](https://github.com/miyako/4d-utility-sign-app) on how to enable the plugin in 4D.
+
 # 4d-plugin-ical-v3
 Updated version of iCal API
 
