@@ -4,7 +4,7 @@
 # [TN3130: Changes to EventKit in macOS Ventura 13](https://developer.apple.com/documentation/technotes/tn3130-changes-to-eventkit-in-macos13-ventura)
 
 
-- [ ] The inherited initializer init() throws an exception when attempting to create a new calendar. Use init(for:eventStore:) instead. In the legacy behavior, this inherited initializer returns an unusable EKCalendar object.
+- [*] The inherited initializer init() throws an exception when attempting to create a new calendar. Use init(for:eventStore:) instead. In the legacy behavior, this inherited initializer returns an unusable EKCalendar object.
 - [ ] The recurrenceRules property returns an empty array if the calendar item doesn’t have any recurrence rules. In the legacy behavior, recurrenceRules returns nil if the calendar item doesn’t have any recurrence rules.
 - [ ] The inherited initializer init() throws an exception when attempting to create a new event. Use init(eventStore:) to create new events. In the legacy behavior, this inherited initializer returns an unusable EKEvent object.
 - [ ] The eventIdentifier property now returns identifiers in a new format. The previous identifier format will continue to work.
