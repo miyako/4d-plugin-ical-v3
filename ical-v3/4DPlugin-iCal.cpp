@@ -1318,6 +1318,20 @@ void iCal_Create_event(PA_PluginParameters params) {
         
 #if USE_EK_CALENDAR_ITEM
         EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+        
+        if(defaultCalendarStore) {
+            NSArray<EKSource *> *delegateSources = [defaultCalendarStore delegateSources];
+            if(delegateSources) {
+                
+                delegateSources = [delegateSources arrayByAddingObjectsFromArray:[defaultCalendarStore sources]];
+                
+                EKEventStore *_defaultCalendarStore = [[EKEventStore alloc]initWithSources:delegateSources];
+                if(_defaultCalendarStore) {
+                    [defaultCalendarStore release];
+                    defaultCalendarStore = _defaultCalendarStore;
+                }
+            }
+        }
 #else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
 #endif
@@ -1405,6 +1419,20 @@ void iCal_Set_event_property(PA_PluginParameters params) {
         
 #if USE_EK_CALENDAR_ITEM
         EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+        
+        if(defaultCalendarStore) {
+            NSArray<EKSource *> *delegateSources = [defaultCalendarStore delegateSources];
+            if(delegateSources) {
+                
+                delegateSources = [delegateSources arrayByAddingObjectsFromArray:[defaultCalendarStore sources]];
+                
+                EKEventStore *_defaultCalendarStore = [[EKEventStore alloc]initWithSources:delegateSources];
+                if(_defaultCalendarStore) {
+                    [defaultCalendarStore release];
+                    defaultCalendarStore = _defaultCalendarStore;
+                }
+            }
+        }
 #else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
 #endif
@@ -1491,6 +1519,20 @@ void iCal_Get_event_property(PA_PluginParameters params) {
         
 #if USE_EK_CALENDAR_ITEM
         EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+        
+        if(defaultCalendarStore) {
+            NSArray<EKSource *> *delegateSources = [defaultCalendarStore delegateSources];
+            if(delegateSources) {
+                
+                delegateSources = [delegateSources arrayByAddingObjectsFromArray:[defaultCalendarStore sources]];
+                
+                EKEventStore *_defaultCalendarStore = [[EKEventStore alloc]initWithSources:delegateSources];
+                if(_defaultCalendarStore) {
+                    [defaultCalendarStore release];
+                    defaultCalendarStore = _defaultCalendarStore;
+                }
+            }
+        }
 #else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
 #endif
@@ -1537,6 +1579,20 @@ void iCal_Remove_event(PA_PluginParameters params) {
         
 #if USE_EK_CALENDAR_ITEM
         EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+        
+        if(defaultCalendarStore) {
+            NSArray<EKSource *> *delegateSources = [defaultCalendarStore delegateSources];
+            if(delegateSources) {
+                
+                delegateSources = [delegateSources arrayByAddingObjectsFromArray:[defaultCalendarStore sources]];
+                
+                EKEventStore *_defaultCalendarStore = [[EKEventStore alloc]initWithSources:delegateSources];
+                if(_defaultCalendarStore) {
+                    [defaultCalendarStore release];
+                    defaultCalendarStore = _defaultCalendarStore;
+                }
+            }
+        }
 #else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
 #endif
@@ -1606,6 +1662,20 @@ void iCal_Create_calendar(PA_PluginParameters params) {
         
 #if USE_EK_CALENDAR_ITEM
         EKEventStore     *defaultCalendarStore = [[EKEventStore alloc]init];
+        
+        if(defaultCalendarStore) {
+            NSArray<EKSource *> *delegateSources = [defaultCalendarStore delegateSources];
+            if(delegateSources) {
+                
+                delegateSources = [delegateSources arrayByAddingObjectsFromArray:[defaultCalendarStore sources]];
+                
+                EKEventStore *_defaultCalendarStore = [[EKEventStore alloc]initWithSources:delegateSources];
+                if(_defaultCalendarStore) {
+                    [defaultCalendarStore release];
+                    defaultCalendarStore = _defaultCalendarStore;
+                }
+            }
+        }
 #else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
 #endif
@@ -1720,6 +1790,20 @@ void iCal_Set_calendar_property(PA_PluginParameters params) {
         
 #if USE_EK_CALENDAR_ITEM
         EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+        
+        if(defaultCalendarStore) {
+            NSArray<EKSource *> *delegateSources = [defaultCalendarStore delegateSources];
+            if(delegateSources) {
+                
+                delegateSources = [delegateSources arrayByAddingObjectsFromArray:[defaultCalendarStore sources]];
+                
+                EKEventStore *_defaultCalendarStore = [[EKEventStore alloc]initWithSources:delegateSources];
+                if(_defaultCalendarStore) {
+                    [defaultCalendarStore release];
+                    defaultCalendarStore = _defaultCalendarStore;
+                }
+            }
+        }
 #else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
 #endif
@@ -1801,6 +1885,20 @@ void iCal_Get_calendar_property(PA_PluginParameters params) {
         
 #if USE_EK_CALENDAR_ITEM
         EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+        
+        if(defaultCalendarStore) {
+            NSArray<EKSource *> *delegateSources = [defaultCalendarStore delegateSources];
+            if(delegateSources) {
+                
+                delegateSources = [delegateSources arrayByAddingObjectsFromArray:[defaultCalendarStore sources]];
+                
+                EKEventStore *_defaultCalendarStore = [[EKEventStore alloc]initWithSources:delegateSources];
+                if(_defaultCalendarStore) {
+                    [defaultCalendarStore release];
+                    defaultCalendarStore = _defaultCalendarStore;
+                }
+            }
+        }
 #else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
 #endif
@@ -1848,6 +1946,20 @@ void iCal_Remove_calendar(PA_PluginParameters params) {
 
 #if USE_EK_CALENDAR_ITEM
         EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+        
+        if(defaultCalendarStore) {
+            NSArray<EKSource *> *delegateSources = [defaultCalendarStore delegateSources];
+            if(delegateSources) {
+                
+                delegateSources = [delegateSources arrayByAddingObjectsFromArray:[defaultCalendarStore sources]];
+                
+                EKEventStore *_defaultCalendarStore = [[EKEventStore alloc]initWithSources:delegateSources];
+                if(_defaultCalendarStore) {
+                    [defaultCalendarStore release];
+                    defaultCalendarStore = _defaultCalendarStore;
+                }
+            }
+        }
 #else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
 #endif
@@ -1900,6 +2012,20 @@ void iCal_QUERY_EVENT(PA_PluginParameters params) {
         
 #if USE_EK_CALENDAR_ITEM
         EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+        
+        if(defaultCalendarStore) {
+            NSArray<EKSource *> *delegateSources = [defaultCalendarStore delegateSources];
+            if(delegateSources) {
+                
+                delegateSources = [delegateSources arrayByAddingObjectsFromArray:[defaultCalendarStore sources]];
+                
+                EKEventStore *_defaultCalendarStore = [[EKEventStore alloc]initWithSources:delegateSources];
+                if(_defaultCalendarStore) {
+                    [defaultCalendarStore release];
+                    defaultCalendarStore = _defaultCalendarStore;
+                }
+            }
+        }
 #else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
 #endif
@@ -1996,6 +2122,20 @@ void iCal_GET_CALENDAR_LIST(PA_PluginParameters params) {
         
 #if USE_EK_CALENDAR_ITEM
         EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
+        
+        if(defaultCalendarStore) {
+            NSArray<EKSource *> *delegateSources = [defaultCalendarStore delegateSources];
+            if(delegateSources) {
+                
+                delegateSources = [delegateSources arrayByAddingObjectsFromArray:[defaultCalendarStore sources]];
+                
+                EKEventStore *_defaultCalendarStore = [[EKEventStore alloc]initWithSources:delegateSources];
+                if(_defaultCalendarStore) {
+                    [defaultCalendarStore release];
+                    defaultCalendarStore = _defaultCalendarStore;
+                }
+            }
+        }
 #else
         CalCalendarStore *defaultCalendarStore = [CalCalendarStore defaultCalendarStore];
 #endif
@@ -2058,6 +2198,17 @@ void iCal_Get_default_calendar(PA_PluginParameters params) {
         EKEventStore *defaultCalendarStore = [[EKEventStore alloc]init];
         
         if(defaultCalendarStore) {
+            NSArray<EKSource *> *delegateSources = [defaultCalendarStore delegateSources];
+            if(delegateSources) {
+                
+                delegateSources = [delegateSources arrayByAddingObjectsFromArray:[defaultCalendarStore sources]];
+                
+                EKEventStore *_defaultCalendarStore = [[EKEventStore alloc]initWithSources:delegateSources];
+                if(_defaultCalendarStore) {
+                    [defaultCalendarStore release];
+                    defaultCalendarStore = _defaultCalendarStore;
+                }
+            }
             
             EKCalendar *calendar = defaultCalendarStore.defaultCalendarForNewEvents;
 
@@ -2081,6 +2232,10 @@ void iCal_Get_default_calendar(PA_PluginParameters params) {
                     
                     PA_ObjectRef s = PA_CreateObject();
 
+                    if (@available(macOS 13.0, *)) {
+                        ob_set_b(s, L"isDelegate", source.isDelegate);
+                    }
+                    
                     ob_set_v(s, L"uid", source.sourceIdentifier);
                     ob_set_v(s, L"title", source.title);
                     

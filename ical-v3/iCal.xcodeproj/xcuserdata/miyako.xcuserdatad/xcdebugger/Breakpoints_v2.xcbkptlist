@@ -14,8 +14,8 @@
             filePath = "4DPlugin-iCal.cpp"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1502"
-            endingLineNumber = "1502"
+            startingLineNumber = "1544"
+            endingLineNumber = "1544"
             landmarkName = "iCal_Get_event_property(params)"
             landmarkType = "9">
          </BreakpointContent>
