@@ -1,14 +1,17 @@
 //%attributes = {}
-$status:=iCal Request permisson 
+$r:=1.234567890123e+16
+
+
+
+
+$real:=1.234567890123e+16
+
+$status:=iCal Request permisson
 
 If ($status.success)
 	
-	
-	
-	
-	
 	$options:=New object:C1471
-	$options.calendar:=New object:C1471("title";"TEST")
+	$options.calendar:=New object:C1471("title"; "TEST")
 	$options.title:="TEST EVENT"
 	$options.startDate:=Current date:C33
 	$options.endDate:=Current date:C33+1
@@ -20,10 +23,10 @@ If ($status.success)
 	$options.recurrenceRule.recurrenceEnd:=New object:C1471
 	$options.recurrenceRule.recurrenceEnd.occurrenceCount:=3
 	
-	$status:=iCal Create event ($options)
+	$status:=iCal Create event($options)
 	
 	If ($status.success)
-		$status:=iCal Get event property ($status.event)
+		$status:=iCal Get event property($status.event)
 		
 	End if 
 	

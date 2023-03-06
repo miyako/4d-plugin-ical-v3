@@ -1,9 +1,9 @@
 //%attributes = {"invisible":true}
-$status:=iCal Request permisson 
+$status:=iCal Request permisson
 
 If ($status.success)
 	
-	$status:=iCal Get default calendar 
+	$status:=iCal Get default calendar
 	
 	If ($status.success)
 		
@@ -11,10 +11,10 @@ If ($status.success)
 		
 		$sources:=$status.sources
 		
-		  //"Local" and "Subscription" are constant types of uid
+		//"Local" and "Subscription" are constant types of uid
 		
-		$iCloud:=$sources.query("type == :1";"CalDAV").extract("uid")  //iCloud
-		$exchange:=$sources.query("type == :1";"Exchange").extract("uid")
+		$iCloud:=$sources.query("type == :1"; "CalDAV").extract("uid")  //iCloud
+		$exchange:=$sources.query("type == :1"; "Exchange").extract("uid")
 		
 	End if 
 End if 
