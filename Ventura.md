@@ -15,3 +15,6 @@
 - [ ] When you call saveCalendar(_:commit:), removeCalendar(_:commit:), save(_:span:commit:), remove(_:span:commit:), save(_:commit:), or remove(_:commit:) methods with the commit parameter set to true, EKEventStore attempts to immediatedly save and commit your changes to the event store. If the commit fails, EKEventStore automatically rolls back all changes that been saved but aren’t yet committed to the event store. In the legacy behavior, uncommitted objects remain saved in the event store.
 - [x] The inherited initializer init() throws an exception when attempting to create a new reminder. Use init(eventStore:) instead.
 
+---
+
+It seems like `EKEventStore*` instance can only be allocated up to `5` times per thread.
