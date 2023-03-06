@@ -1941,10 +1941,11 @@ void iCal_QUERY_EVENT(PA_PluginParameters params) {
                                     startTime = now;
                                     PA_YieldAbsolute();
                                 }
-                                if([[events objectAtIndex:i]isMemberOfClass:[CalEvent class]]) {
 #if USE_EK_CALENDAR_ITEM
+                                if([[events objectAtIndex:i]isMemberOfClass:[EKEvent class]]) {
                                     EKEvent *event = [events objectAtIndex:i];
 #else
+                                if([[events objectAtIndex:i]isMemberOfClass:[CalEvent class]]) {
                                     CalEvent *event = [events objectAtIndex:i];
 #endif
                                     ob_add_event(_events, event);
