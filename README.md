@@ -2,6 +2,7 @@
 ![platform](https://img.shields.io/static/v1?label=platform&message=mac-intel%20|%20mac-arm&color=blue)
 [![license](https://img.shields.io/github/license/miyako/4d-plugin-ical-v3)](LICENSE)
 ![downloads](https://img.shields.io/github/downloads/miyako/4d-plugin-ical-v3/total)
+![deprecated](https://img.shields.io/badge/-deprecated-inactive)
 
 See [4d-utility-sign-app](https://github.com/miyako/4d-utility-sign-app) on how to enable the plugin in 4D.
 
