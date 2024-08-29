@@ -430,17 +430,15 @@ ob_get_event(PA_ObjectRef options,
     if(options){
         if(calendarStore){
             NSString *uid = ob_get_v(options, L"uid");
-            if(uid){
+            if((uid) && (![uid isEqualToString:@""])) {
 #if USE_EK_CALENDAR_ITEM
                 NSArray *values = [calendarStore calendarItemsWithExternalIdentifier:uid];
                 if([values count]) {
                     value = [values objectAtIndex:0];
                 }
 #else
-                if(uid){
-                    NSDate *occurrence = ob_get_d(options, L"occurrence");
-                    value = [calendarStore eventWithUID:uid occurrence:occurrence];
-                }
+                NSDate *occurrence = ob_get_d(options, L"occurrence");
+                value = [calendarStore eventWithUID:uid occurrence:occurrence];
 #endif
             }
         }
